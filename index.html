@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 10px 25px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #764ba2;
+        }
+
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .column {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column-header {
+            padding: 15px;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .column-header.todo {
+            background-color: #ef4444;
+        }
+
+        .column-header.progress {
+            background-color: #f59e0b;
+        }
+
+        .column-header.done {
+            background-color: #10b981;
+        }
+
+        .card-count {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+
+        .cards-container {
+            flex: 1;
+            padding: 15px;
+            min-height: 400px;
+        }
+
+        .card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .card-text {
+            flex: 1;
+            word-wrap: break-word;
+            color: #374151;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background-color 0.3s;
+        }
+
+        .btn-delete:hover {
+            background-color: #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 40px 20px;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            input[type="text"] {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kanban Game</h1>
+            <p><span class="status-indicator"></span>Servidor funcionando!</p>
+        </header>
+
+        <div class="controls">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="taskInput" 
+                    placeholder="Adicione uma nova tarefa..."
+                    autocomplete="off"
+                >
+                <button onclick="addTask()">Adicionar Tarefa</button>
+            </div>
+        </div>
+
+        <div class="kanban-board">
+            <div class="column">
+                <div class="column-header todo">
+                    <span>A Fazer</span>
+                    <span class="card-count" id="count-todo">0</span>
+                </div>
+                <div class="cards-container" id="column-todo" ondrop="dropCard(event)" ondragover="allowDrop(event)">
+                    <div class="empty-state">Nenhuma tarefa</div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-header progress">
+                    <span>Em Progresso</span>
+                    <span class="card-count" id="count-progress">0</span>
+                </div>
+                <div class="cards-container" id="column-progress" ondrop="dropCard(event)" ondragover="allowDrop(event)">
+                    <div class="empty-state">Nenhuma tarefa</div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-header done">
+                    <span>Concluído</span>
+                    <span class="card-count" id="count-done">0</span>
+                </div>
+                <div class="cards-container" id="column-done" ondrop="dropCard(event)" ondragover="allowDrop(event)">
+                    <div class="empty-state">Nenhuma tarefa</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tasks = {
+            todo: [],
+            progress: [],
+            done: []
+        };
+
+        let taskIdCounter = 1;
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+
+            if (!text) {
+                alert('Por favor, digite uma tarefa!');
+                return;
+            }
+
+            const task = {
+                id: taskIdCounter++,
+                text: text
+            };
+
+            tasks.todo.push(task);
+            input.value = '';
+            render();
+        }
+
+        function deleteTask(column, taskId) {
+            tasks[column] = tasks[column].filter(task => task.id !== taskId);
+            render();
+        }
+
+        function createCardElement(task, column) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.draggable = true;
+            card.id = `task-${task.id}`;
+            card.dataset.column = column;
+            card.dataset.taskId = task.id;
+
+            card.innerHTML = `
+                <span class="card-text">${escapeHtml(task.text)}</span>
+                <div class="card-actions">
+                    <button class="btn-delete" onclick="deleteTask('${column}', ${task.id})">✕</button>
+                </div>
+            `;
+
+            card.addEventListener('dragstart', dragStart);
+            card.addEventListener('dragend', dragEnd);
+
+            return card;
+        }
+
+        function render() {
+            ['todo', 'progress', 'done'].forEach(column => {
+                const container = document.getElementById(`column-${column}`);
+                container.innerHTML = '';
+
+                if (tasks[column].length === 0) {
+                    container.innerHTML = '<div class="empty-state">Nenhuma tarefa</div>';
+                } else {
+                    tasks[column].forEach(task => {
+                        container.appendChild(createCardElement(task, column));
+                    });
+                }
+
+                document.getElementById(`count-${column}`).textContent = tasks[column].length;
+            });
+        }
+
+        let draggedCard = null;
+
+        function dragStart(e) {
+            draggedCard = e.target.closest('.card');
+            draggedCard.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function dragEnd(e) {
+            if (draggedCard) {
+                draggedCard.classList.remove('dragging');
+                draggedCard = null;
+            }
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function dropCard(e) {
+            e.preventDefault();
+
+            if (!draggedCard) return;
+
+            const targetColumn = e.target.closest('.cards-container');
+            if (!targetColumn) return;
+
+            const columnId = targetColumn.id.replace('column-', '');
+            const taskId = parseInt(draggedCard.dataset.taskId);
+            const sourceColumn = draggedCard.dataset.column;
+
+            if (sourceColumn !== columnId) {
+                const taskIndex = tasks[sourceColumn].findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) {
+                    const [task] = tasks[sourceColumn].splice(taskIndex, 1);
+                    tasks[columnId].push(task);
+                    render();
+                }
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('taskInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        render();
+    </script>
+</body>
+</html>
