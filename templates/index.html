@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban EV - Simulador Educacional</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- ===================================================================================
+         CABEÇALHO
+         =================================================================================== -->
+    <header class="header" role="banner">
+        <div class="header-left">
+            <h1>🏭 Kanban EV</h1>
+            <span class="subtitle">Simulador de Fluxo de Trabalho Ágil</span>
+        </div>
+        <div class="header-center">
+            <div class="day-info">
+                <span class="day-label">Dia</span>
+                <span class="day-value" id="currentDay">0</span>
+            </div>
+            <button id="btnNextDay" class="btn btn-primary btn-large" aria-label="Avançar para o próximo dia">
+                🎲 Próximo Dia
+            </button>
+        </div>
+        <div class="header-right">
+            <button id="btnRestart" class="btn btn-danger" aria-label="Reiniciar jogo">
+                🔄 Reiniciar
+            </button>
+            <button id="btnHelp" class="btn btn-secondary" aria-label="Abrir ajuda">
+                ❓ Ajuda
+            </button>
+        </div>
+    </header>
+
+    <!-- ===================================================================================
+         ÁREA PRINCIPAL
+         =================================================================================== -->
+    <main class="main-container" role="main">
+        <!-- Quadro Kanban -->
+        <section class="kanban-board" aria-label="Quadro Kanban">
+            <!-- Coluna: Backlog -->
+            <div class="kanban-column" data-column="backlog">
+                <div class="column-header">
+                    <h2>📋 Backlog</h2>
+                    <span class="card-count">0</span>
+                </div>
+                <div class="cards-container" id="backlog" 
+                     role="listbox" 
+                     aria-label="Cartões no Backlog"
+                     tabindex="0"></div>
+            </div>
+
+            <!-- Coluna: Pronto para Iniciar -->
+            <div class="kanban-column" data-column="ready">
+                <div class="column-header">
+                    <h2>🎯 Pronto</h2>
+                    <div class="wip-indicator">
+                        <span class="card-count">0</span>
+                        <span class="wip-limit">/ 3</span>
+                    </div>
+                </div>
+                <div class="wip-bar" data-wip-limit="3"></div>
+                <div class="cards-container" id="ready"
+                     role="listbox"
+                     aria-label="Cartões prontos para iniciar"
+                     tabindex="0"></div>
+            </div>
+
+            <!-- Coluna: Análise -->
+            <div class="kanban-column" data-column="analysis">
+                <div class="column-header">
+                    <h2>🔍 Análise</h2>
+                    <div class="wip-indicator">
+                        <span class="card-count">0</span>
+                        <span class="wip-limit">/ 3</span>
+                    </div>
+                </div>
+                <div class="wip-bar" data-wip-limit="3"></div>
+                <div class="agent-slot analyst" data-agent-type="analyst">
+                    <span class="agent-icon">👤</span>
+                    <span class="agent-name">Analista</span>
+                    <span class="agent-dice" id="analystDice">-</span>
+                </div>
+                <div class="cards-container" id="analysis"
+                     role="listbox"
+                     aria-label="Cartões em análise"
+                     tabindex="0"></div>
+            </div>
+
+            <!-- Coluna: Desenvolvimento -->
+            <div class="kanban-column" data-column="development">
+                <div class="column-header">
+                    <h2>💻 Desenvolvimento</h2>
+                    <div class="wip-indicator">
+                        <span class="card-count">0</span>
+                        <span class="wip-limit">/ 4</span>
+                    </div>
+                </div>
+                <div class="wip-bar" data-wip-limit="4"></div>
+                <div class="agent-slot developer" data-agent-type="developer">
+                    <span class="agent-icon">👤</span>
+                    <span class="agent-name">Desenvolvedor</span>
+                    <span class="agent-dice" id="developerDice">-</span>
+                </div>
+                <div class="cards-container" id="development"
+                     role="listbox"
+                     aria-label="Cartões em desenvolvimento"
+                     tabindex="0"></div>
+            </div>
+
+            <!-- Coluna: Teste -->
+            <div class="kanban-column" data-column="testing">
+                <div class="column-header">
+                    <h2>🧪 Teste</h2>
+                    <div class="wip-indicator">
+                        <span class="card-count">0</span>
+                        <span class="wip-limit">/ 3</span>
+                    </div>
+                </div>
+                <div class="wip-bar" data-wip-limit="3"></div>
+                <div class="agent-slot tester" data-agent-type="tester">
+                    <span class="agent-icon">👤</span>
+                    <span class="agent-name">Testador</span>
+                    <span class="agent-dice" id="testerDice">-</span>
+                </div>
+                <div class="cards-container" id="testing"
+                     role="listbox"
+                     aria-label="Cartões em teste"
+                     tabindex="0"></div>
+            </div>
+
+            <!-- Coluna: Concluído -->
+            <div class="kanban-column completed" data-column="deployed">
+                <div class="column-header">
+                    <h2>✅ Concluído</h2>
+                    <span class="card-count">0</span>
+                </div>
+                <div class="cards-container" id="deployed"
+                     role="listbox"
+                     aria-label="Cartões concluídos"
+                     tabindex="0"></div>
+            </div>
+        </section>
+
+        <!-- Painel Lateral -->
+        <aside class="sidebar" role="complementary" aria-label="Painel de controle">
+            <!-- Estatísticas -->
+            <div class="panel stats-panel">
+                <h3>📊 Estatísticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Valor Entregue</span>
+                        <span class="stat-value positive" id="totalValue">R$ 0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Custo Acumulado</span>
+                        <span class="stat-value negative" id="totalCost">R$ 0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Lucro</span>
+                        <span class="stat-value" id="profit">R$ 0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Lead Time Médio</span>
+                        <span class="stat-value" id="avgLeadTime">0 dias</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Throughput</span>
+                        <span class="stat-value" id="throughput">0 / dia</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Bloqueios</span>
+                        <span class="stat-value warning" id="blockedCount">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipe -->
+            <div class="panel team-panel">
+                <h3>👥 Equipe</h3>
+                <div class="team-members">
+                    <div class="team-member analyst" id="teamAnalyst">
+                        <div class="member-header">
+                            <span class="member-icon">🔍</span>
+                            <span class="member-name">Analista</span>
+                        </div>
+                        <div class="member-stats">
+                            <div class="stat">
+                                <span>Eficiência:</span>
+                                <span class="efficiency">2x</span>
+                            </div>
+                            <div class="stat">
+                                <span>Último dado:</span>
+                                <span class="last-dice">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-member developer" id="teamDeveloper">
+                        <div class="member-header">
+                            <span class="member-icon">💻</span>
+                            <span class="member-name">Desenvolvedor</span>
+                        </div>
+                        <div class="member-stats">
+                            <div class="stat">
+                                <span>Eficiência:</span>
+                                <span class="efficiency">2x</span>
+                            </div>
+                            <div class="stat">
+                                <span>Último dado:</span>
+                                <span class="last-dice">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-member tester" id="teamTester">
+                        <div class="member-header">
+                            <span class="member-icon">🧪</span>
+                            <span class="member-name">Testador</span>
+                        </div>
+                        <div class="member-stats">
+                            <div class="stat">
+                                <span>Eficiência:</span>
+                                <span class="efficiency">2x</span>
+                            </div>
+                            <div class="stat">
+                                <span>Último dado:</span>
+                                <span class="last-dice">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico -->
+            <div class="panel history-panel">
+                <h3>📜 Histórico</h3>
+                <div class="history-list" id="historyList" role="log" aria-live="polite">
+                    <p class="history-empty">Nenhuma ação ainda...</p>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="panel actions-panel">
+                <h3>⚡ Ações</h3>
+                <div class="actions-buttons">
+                    <button id="btnAddCard" class="btn btn-success btn-block">
+                        ➕ Adicionar Cartão
+                    </button>
+                    <button id="btnExportState" class="btn btn-secondary btn-block">
+                        📤 Exportar Estado
+                    </button>
+                    <button id="btnImportState" class="btn btn-secondary btn-block">
+                        📥 Importar Estado
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- ===================================================================================
+         ÁREA DE GRÁFICOS
+         =================================================================================== -->
+    <section class="charts-section" aria-label="Gráficos e métricas">
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3>📈 Diagrama de Fluxo Cumulativo (CFD)</h3>
+                <canvas id="cfdChart" aria-label="Gráfico de fluxo cumulativo"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>⏱️ Lead Time por Cartão</h3>
+                <canvas id="leadTimeChart" aria-label="Gráfico de lead time"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>💰 Desempenho Financeiro</h3>
+                <canvas id="financialChart" aria-label="Gráfico financeiro"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>📊 Throughput por Dia</h3>
+                <canvas id="throughputChart" aria-label="Gráfico de throughput"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================================
+         RODAPÉ
+         =================================================================================== -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-left">
+            <span class="legend-item">
+                <span class="legend-color analyst"></span> Analista
+            </span>
+            <span class="legend-item">
+                <span class="legend-color developer"></span> Desenvolvedor
+            </span>
+            <span class="legend-item">
+                <span class="legend-color tester"></span> Testador
+            </span>
+        </div>
+        <div class="footer-center">
+            <p>Simulador educacional de metodologia Kanban</p>
+        </div>
+        <div class="footer-right">
+            <span id="gameStatus">Aguardando início...</span>
+        </div>
+    </footer>
+
+    <!-- ===================================================================================
+         MODAIS
+         =================================================================================== -->
+    
+    <!-- Modal: Adicionar/Editar Cartão -->
+    <div id="modalCard" class="modal" role="dialog" aria-labelledby="modalCardTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalCardTitle">Adicionar Cartão</h2>
+                <button class="modal-close" aria-label="Fechar modal">&times;</button>
+            </div>
+            <form id="formCard" class="modal-body">
+                <div class="form-group">
+                    <label for="cardTitle">Título *</label>
+                    <input type="text" id="cardTitle" name="title" required 
+                           placeholder="Ex: Implementar login" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label for="cardDescription">Descrição</label>
+                    <textarea id="cardDescription" name="description" rows="3"
+                              placeholder="Descrição opcional da tarefa"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cardEffort">Esforço *</label>
+                        <input type="number" id="cardEffort" name="effort" required
+                               min="1" max="20" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardValue">Valor (R$) *</label>
+                        <input type="number" id="cardValue" name="value" required
+                               min="10" max="1000" value="100">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cardPriority">Prioridade</label>
+                        <select id="cardPriority" name="priority">
+                            <option value="low">Baixa</option>
+                            <option value="medium" selected>Média</option>
+                            <option value="high">Alta</option>
+                            <option value="urgent">Urgente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cardCategory">Categoria</label>
+                        <select id="cardCategory" name="category">
+                            <option value="feature">Feature</option>
+                            <option value="bug">Bug</option>
+                            <option value="improvement">Melhoria</option>
+                            <option value="tech-debt">Dívida Técnica</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelCard">Cancelar</button>
+                <button type="submit" form="formCard" class="btn btn-primary">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ajuda -->
+    <div id="modalHelp" class="modal" role="dialog" aria-labelledby="modalHelpTitle" aria-hidden="true">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modalHelpTitle">❓ Como Jogar</h2>
+                <button class="modal-close" aria-label="Fechar modal">&times;</button>
+            </div>
+            <div class="modal-body help-content">
+                <section>
+                    <h3>🎯 Objetivo</h3>
+                    <p>Gerencie o fluxo de trabalho de uma equipe de desenvolvimento para entregar o máximo de valor possível, respeitando os limites de WIP e minimizando o lead time.</p>
+                </section>
+                
+                <section>
+                    <h3>🎲 Mecânica do Jogo</h3>
+                    <ul>
+                        <li><strong>Próximo Dia:</strong> A cada dia, dados são rolados para cada membro da equipe (1-6). Este é o trabalho que podem realizar.</li>
+                        <li><strong>Especialistas:</strong> Cada membro dobra seu valor quando trabalha em sua área de especialização.</li>
+                        <li><strong>Custo Diário:</strong> R$ 300 por dia de operação.</li>
+                    </ul>
+                </section>
+                
+                <section>
+                    <h3>📋 Colunas do Quadro</h3>
+                    <ul>
+                        <li><strong>Backlog:</strong> Tarefas aguardando para serem iniciadas.</li>
+                        <li><strong>Pronto:</strong> Tarefas prontas para serem puxadas.</li>
+                        <li><strong>Análise:</strong> Tarefas sendo analisadas pelo Analista.</li>
+                        <li><strong>Desenvolvimento:</strong> Tarefas sendo desenvolvidas.</li>
+                        <li><strong>Teste:</strong> Tarefas sendo testadas.</li>
+                        <li><strong>Concluído:</strong> Tarefas entregues que geram valor.</li>
+                    </ul>
+                </section>
+                
+                <section>
+                    <h3>🚦 Limites de WIP</h3>
+                    <p>Cada coluna tem um limite máximo de cartões. Quando atingido, novos cartões não podem entrar até que espaço seja liberado. Isso ajuda a identificar gargalos.</p>
+                </section>
+                
+                <section>
+                    <h3>🖱️ Controles</h3>
+                    <ul>
+                        <li><strong>Arrastar:</strong> Mova cartões entre colunas (respeitando WIP).</li>
+                        <li><strong>Próximo Dia:</strong> Processa o trabalho do dia atual.</li>
+                        <li><strong>Adicionar Cartão:</strong> Crie novos cartões no Backlog.</li>
+                    </ul>
+                </section>
+                
+                <section>
+                    <h3>📊 Métricas</h3>
+                    <ul>
+                        <li><strong>Lead Time:</strong> Tempo desde "Pronto" até "Concluído".</li>
+                        <li><strong>Throughput:</strong> Cartões entregues por dia.</li>
+                        <li><strong>CFD:</strong> Visualização do fluxo acumulado ao longo do tempo.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary modal-close-btn">Entendi!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Exportar/Importar -->
+    <div id="modalExport" class="modal" role="dialog" aria-labelledby="modalExportTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalExportTitle">📤 Exportar Estado</h2>
+                <button class="modal-close" aria-label="Fechar modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Copie o JSON abaixo para salvar o estado atual do jogo:</p>
+                <textarea id="exportData" class="export-textarea" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-close-btn">Fechar</button>
+                <button type="button" class="btn btn-primary" id="btnCopyExport">Copiar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalImport" class="modal" role="dialog" aria-labelledby="modalImportTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalImportTitle">📥 Importar Estado</h2>
+                <button class="modal-close" aria-label="Fechar modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Cole o JSON exportado anteriormente:</p>
+                <textarea id="importData" class="export-textarea" placeholder='{"day": 0, "cards": [...], ...}'></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmImport">Importar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast para notificações -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- ===================================================================================
+         SCRIPTS
+         =================================================================================== -->
+    <script src="{{ url_for('static', filename='js/rules.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/graphs.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>
