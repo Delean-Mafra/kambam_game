@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban EV - Demo Offline</title>
+    <meta name="description" content="Simulador educacional de fluxo de trabalho ágil (Kanban) - Aprenda conceitos de WIP, Lead Time e Throughput">
+    <meta name="author" content="Delean P. Mafra">
+    <meta name="license" content="CC BY-NC 4.0">
+    <link rel="license" href="https://delean-mafra.github.io/Ahtools/CC_BY_NC_4.0">
+    <style>
+/**
+ * ===================================================================================
+ * KANBAN EV - ESTILOS CSS (INLINE DEMO)
+ * ===================================================================================
+ */
+:root {
+    --color-primary: #3498db;
+    --color-primary-dark: #2980b9;
+    --color-secondary: #6c757d;
+    --color-success: #28a745;
+    --color-danger: #dc3545;
+    --color-warning: #ffc107;
+    --color-info: #17a2b8;
+    --bg-main: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #0f3460;
+    --bg-column: #1f4068;
+    --text-primary: #ffffff;
+    --text-secondary: #b8b8b8;
+    --text-muted: #6c757d;
+    --color-analyst: #e74c3c;
+    --color-developer: #2ecc71;
+    --color-tester: #3498db;
+    --priority-low: #27ae60;
+    --priority-medium: #f39c12;
+    --priority-high: #e74c3c;
+    --priority-urgent: #9b59b6;
+    --category-feature: #3498db;
+    --category-bug: #e74c3c;
+    --category-improvement: #2ecc71;
+    --category-tech-debt: #f39c12;
+    --header-height: 70px;
+    --footer-height: 50px;
+    --sidebar-width: 320px;
+    --column-min-width: 220px;
+    --card-width: 200px;
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+.header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--header-height);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: var(--spacing-md); }
+.header-left h1 { font-size: 1.5rem; font-weight: 700; color: var(--color-primary); }
+.header-left .subtitle { font-size: 0.875rem; color: var(--text-secondary); }
+.header-center { display: flex; align-items: center; gap: var(--spacing-lg); }
+.day-info { display: flex; flex-direction: column; align-items: center; background: var(--bg-card); padding: var(--spacing-sm) var(--spacing-lg); border-radius: var(--border-radius-md); }
+.day-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; }
+.day-value { font-size: 1.75rem; font-weight: 700; color: var(--color-primary); }
+.header-right { display: flex; gap: var(--spacing-sm); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-xs); padding: var(--spacing-sm) var(--spacing-md); border: none; border-radius: var(--border-radius-md); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); text-decoration: none; }
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--color-primary); color: white; }
+.btn-primary:hover { background: var(--color-primary-dark); }
+.btn-secondary { background: var(--color-secondary); color: white; }
+.btn-success { background: var(--color-success); color: white; }
+.btn-danger { background: var(--color-danger); color: white; }
+.btn-large { padding: var(--spacing-md) var(--spacing-xl); font-size: 1rem; }
+.btn-block { width: 100%; }
+
+.main-container { display: grid; grid-template-columns: 1fr var(--sidebar-width); gap: var(--spacing-md); padding: calc(var(--header-height) + var(--spacing-md)) var(--spacing-md) var(--spacing-md); min-height: calc(100vh - var(--header-height)); }
+.kanban-board { display: flex; gap: var(--spacing-md); overflow-x: auto; padding-bottom: var(--spacing-md); }
+.kanban-column { flex: 0 0 var(--column-min-width); min-width: var(--column-min-width); background: var(--bg-column); border-radius: var(--border-radius-lg); padding: var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.kanban-column.completed { background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%); }
+.column-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: var(--spacing-sm); border-bottom: 2px solid rgba(255, 255, 255, 0.1); }
+.column-header h2 { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+.card-count { background: var(--bg-card); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--border-radius-sm); font-size: 0.8rem; font-weight: 700; }
+.wip-indicator { display: flex; align-items: center; gap: var(--spacing-xs); }
+.wip-limit { color: var(--text-muted); font-size: 0.8rem; }
+.wip-bar { height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; position: relative; }
+.wip-bar::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: var(--wip-percentage, 0%); background: var(--color-success); transition: all var(--transition-normal); }
+.wip-bar.warning::after { background: var(--color-warning); }
+.wip-bar.danger::after { background: var(--color-danger); }
+.agent-slot { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); background: rgba(0, 0, 0, 0.2); border-radius: var(--border-radius-sm); font-size: 0.75rem; }
+.agent-slot.analyst { border-left: 3px solid var(--color-analyst); }
+.agent-slot.developer { border-left: 3px solid var(--color-developer); }
+.agent-slot.tester { border-left: 3px solid var(--color-tester); }
+.agent-icon { font-size: 1rem; }
+.agent-name { flex: 1; color: var(--text-secondary); }
+.agent-dice { background: var(--bg-card); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--border-radius-sm); font-weight: 700; color: var(--color-warning); }
+.agent-slot.absent { opacity: 0.5; background: rgba(220, 53, 69, 0.2); }
+.agent-slot.absent .agent-icon { filter: grayscale(100%); }
+.agent-dice.agent-absent { background: var(--color-danger); color: white; animation: blink 1.5s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.cards-container { flex: 1; min-height: 200px; display: flex; flex-direction: column; gap: var(--spacing-sm); padding: var(--spacing-xs); border-radius: var(--border-radius-sm); transition: background var(--transition-fast); }
+.cards-container.drag-over { background: rgba(52, 152, 219, 0.2); outline: 2px dashed var(--color-primary); }
+.cards-container.blocked { background: rgba(220, 53, 69, 0.1); }
+
+.card { background: var(--bg-card); border-radius: var(--border-radius-md); padding: var(--spacing-md); cursor: grab; transition: all var(--transition-fast); border-left: 4px solid transparent; position: relative; }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.card.dragging { opacity: 0.5; cursor: grabbing; }
+.card.completed { animation: cardComplete 0.5s ease; }
+@keyframes cardComplete { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 20px var(--color-success); } }
+.card.priority-low { border-left-color: var(--priority-low); }
+.card.priority-medium { border-left-color: var(--priority-medium); }
+.card.priority-high { border-left-color: var(--priority-high); }
+.card.priority-urgent { border-left-color: var(--priority-urgent); animation: urgentPulse 2s infinite; }
+@keyframes urgentPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.4); } 50% { box-shadow: 0 0 0 8px rgba(155, 89, 182, 0); } }
+.card-category { position: absolute; top: var(--spacing-sm); right: var(--spacing-sm); font-size: 0.65rem; padding: 2px 6px; border-radius: var(--border-radius-sm); text-transform: uppercase; font-weight: 600; }
+.card-category.feature { background: var(--category-feature); }
+.card-category.bug { background: var(--category-bug); }
+.card-category.improvement { background: var(--category-improvement); }
+.card-category.tech-debt { background: var(--category-tech-debt); }
+.card-header { margin-bottom: var(--spacing-sm); }
+.card-id { font-size: 0.7rem; color: var(--text-muted); margin-bottom: var(--spacing-xs); }
+.card-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.card-body { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+.card-progress { background: rgba(255, 255, 255, 0.1); height: 6px; border-radius: 3px; overflow: hidden; }
+.card-progress-bar { height: 100%; background: var(--color-success); transition: width var(--transition-normal); }
+.card-stats { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-secondary); }
+.card-effort { display: flex; align-items: center; gap: var(--spacing-xs); }
+.card-value { color: var(--color-success); font-weight: 600; }
+.card-days { color: var(--text-muted); font-size: 0.7rem; }
+.card.stale { background: linear-gradient(135deg, var(--bg-card) 0%, #5c3d2e 100%); }
+.card.stale::after { content: '⚠️'; position: absolute; top: var(--spacing-sm); right: var(--spacing-sm); }
+.card.has-bug { border-left: 4px solid var(--color-danger); }
+.card.deployed { opacity: 0.9; background: linear-gradient(135deg, var(--bg-card) 0%, #2d5016 100%); }
+.ready-badge { background: var(--color-success); color: white; padding: 4px 8px; border-radius: var(--border-radius-sm); font-size: 0.7rem; font-weight: bold; margin-bottom: var(--spacing-xs); text-align: center; }
+.bug-indicator { background: var(--color-danger); color: white; padding: 4px 8px; border-radius: var(--border-radius-sm); font-size: 0.7rem; font-weight: bold; margin-bottom: var(--spacing-xs); text-align: center; }
+.deadline-indicator { padding: 4px 8px; border-radius: var(--border-radius-sm); font-size: 0.7rem; font-weight: bold; margin-bottom: var(--spacing-xs); text-align: center; }
+.deadline-low { background: #2c3e50; color: #ecf0f1; }
+.deadline-medium { background: var(--color-warning); color: #1a1a1a; }
+.deadline-high { background: #e67e22; color: white; }
+.deadline-urgent { background: var(--color-danger); color: white; animation: pulse 1s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+.specialist-controls { display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-sm); padding-top: var(--spacing-sm); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.specialist-btn { width: 28px; height: 28px; border: none; border-radius: 50%; background: var(--color-primary); color: white; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all var(--transition-fast); }
+.specialist-btn:hover { background: var(--color-primary-dark); transform: scale(1.1); }
+specialist-btn:active { transform: scale(0.95); }
+.specialist-count { font-size: 0.85rem; font-weight: bold; color: var(--text-primary); min-width: 60px; text-align: center; }
+.card-value.penalty { color: var(--color-danger); text-decoration: line-through; }
+
+.sidebar { display: flex; flex-direction: column; gap: var(--spacing-md); max-height: calc(100vh - var(--header-height) - var(--spacing-md) * 2); overflow-y: auto; }
+.panel { background: var(--bg-secondary); border-radius: var(--border-radius-lg); padding: var(--spacing-md); }
+.panel h3 { font-size: 1rem; font-weight: 600; margin-bottom: var(--spacing-md); padding-bottom: var(--spacing-sm); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); }
+.stat-item { background: var(--bg-card); padding: var(--spacing-sm); border-radius: var(--border-radius-sm); text-align: center; }
+.stat-label { font-size: 0.7rem; color: var(--text-secondary); display: block; margin-bottom: var(--spacing-xs); }
+.stat-value { font-size: 1.1rem; font-weight: 700; }
+.stat-value.positive { color: var(--color-success); }
+.stat-value.negative { color: var(--color-danger); }
+.stat-value.warning { color: var(--color-warning); }
+.team-members { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.team-member { background: var(--bg-card); padding: var(--spacing-sm); border-radius: var(--border-radius-sm); border-left: 3px solid transparent; }
+.team-member.analyst { border-left-color: var(--color-analyst); }
+.team-member.developer { border-left-color: var(--color-developer); }
+.team-member.tester { border-left-color: var(--color-tester); }
+.member-header { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); }
+.member-icon { font-size: 1.2rem; }
+.member-name { font-weight: 600; }
+.member-stats { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); }
+.member-stats .stat { display: flex; gap: var(--spacing-xs); }
+.member-stats .efficiency { color: var(--color-primary); }
+.member-stats .last-dice { color: var(--color-warning); font-weight: 700; }
+.history-panel { max-height: 250px; }
+.history-list { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: var(--spacing-xs); }
+.history-empty { text-align: center; color: var(--text-muted); padding: var(--spacing-md); }
+.history-item { background: var(--bg-card); padding: var(--spacing-sm); border-radius: var(--border-radius-sm); font-size: 0.75rem; }
+.history-item .day { color: var(--color-primary); font-weight: 600; }
+.history-item .action { color: var(--text-primary); }
+.actions-buttons { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+
+.charts-section { padding: var(--spacing-md); background: var(--bg-secondary); margin-top: var(--spacing-md); }
+.charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
+.chart-container { background: var(--bg-card); padding: var(--spacing-md); border-radius: var(--border-radius-lg); }
+.chart-container h3 { font-size: 0.9rem; margin-bottom: var(--spacing-md); color: var(--text-primary); }
+.chart-container canvas { width: 100% !important; height: 200px !important; }
+
+.footer { position: fixed; bottom: 0; left: 0; right: 0; height: var(--footer-height); background: var(--bg-secondary); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--spacing-lg); box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.2); z-index: 100; }
+.footer-left { display: flex; gap: var(--spacing-md); }
+.legend-item { display: flex; align-items: center; gap: var(--spacing-xs); font-size: 0.75rem; color: var(--text-secondary); }
+.legend-color { width: 12px; height: 12px; border-radius: 2px; }
+.legend-color.analyst { background: var(--color-analyst); }
+.legend-color.developer { background: var(--color-developer); }
+.legend-color.tester { background: var(--color-tester); }
+.footer-center { font-size: 0.75rem; color: var(--text-muted); }
+.footer-right { font-size: 0.8rem; color: var(--color-primary); }
+
+.license-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+}
+.license-link:hover { color: var(--text-primary); }
+.license-badge { height: 20px; width: auto; display: block; }
+.license-text { font-size: 0.75rem; color: inherit; }
+
+.modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 200; align-items: center; justify-content: center; padding: var(--spacing-md); }
+.modal.active { display: flex; }
+.modal-content { background: var(--bg-secondary); border-radius: var(--border-radius-lg); max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease; }
+.modal-large { max-width: 700px; }
+@keyframes modalSlideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-md); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.modal-header h2 { font-size: 1.2rem; }
+.modal-close { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; transition: color var(--transition-fast); }
+.modal-close:hover { color: var(--text-primary); }
+.modal-body { padding: var(--spacing-md); }
+.modal-footer { display: flex; justify-content: flex-end; gap: var(--spacing-sm); padding: var(--spacing-md); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.form-group { margin-bottom: var(--spacing-md); }
+.form-group label { display: block; margin-bottom: var(--spacing-xs); font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: var(--spacing-sm); background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-sm); color: var(--text-primary); font-size: 0.875rem; transition: border-color var(--transition-fast); }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--color-primary); }
+.form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
+.export-textarea { width: 100%; min-height: 150px; padding: var(--spacing-sm); background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-sm); color: var(--text-primary); font-family: monospace; font-size: 0.75rem; resize: vertical; }
+.help-content section { margin-bottom: var(--spacing-lg); }
+.help-content h3 { font-size: 1rem; margin-bottom: var(--spacing-sm); color: var(--color-primary); }
+.help-content p { color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+.help-content ul { list-style: none; padding-left: var(--spacing-md); }
+.help-content li { color: var(--text-secondary); margin-bottom: var(--spacing-xs); position: relative; }
+.help-content li::before { content: '•'; position: absolute; left: -15px; color: var(--color-primary); }
+.toast-container { position: fixed; top: calc(var(--header-height) + var(--spacing-md)); right: var(--spacing-md); z-index: 300; display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.toast { background: var(--bg-card); padding: var(--spacing-md); border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); min-width: 280px; animation: toastSlideIn 0.3s ease; display: flex; align-items: center; gap: var(--spacing-sm); }
+@keyframes toastSlideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+.toast.success { border-left: 4px solid var(--color-success); }
+.toast.error { border-left: 4px solid var(--color-danger); }
+.toast.warning { border-left: 4px solid var(--color-warning); }
+.toast.info { border-left: 4px solid var(--color-info); }
+.toast-icon { font-size: 1.2rem; }
+.toast-message { flex: 1; font-size: 0.875rem; }
+
+@media (max-width: 1200px) {
+    .main-container { grid-template-columns: 1fr; }
+    .sidebar { max-height: none; flex-direction: row; flex-wrap: wrap; }
+    .panel { flex: 1 1 300px; }
+    .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .header { flex-direction: column; height: auto; padding: var(--spacing-sm); gap: var(--spacing-sm); }
+    .header-left { flex-direction: column; text-align: center; }
+    .header-center { width: 100%; justify-content: center; }
+    .header-right { width: 100%; justify-content: center; }
+    .main-container { padding-top: 180px; }
+    .kanban-board { flex-direction: column; }
+    .kanban-column { flex: none; width: 100%; }
+    .footer { flex-direction: column; height: auto; padding: var(--spacing-sm); gap: var(--spacing-xs); }
+    .footer-left { flex-wrap: wrap; justify-content: center; }
+}
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+@media (prefers-contrast: high) {
+    :root { --bg-main: #000000; --bg-secondary: #1a1a1a; --bg-card: #2a2a2a; --text-primary: #ffffff; --text-secondary: #e0e0e0; }
+    .card { border: 1px solid #ffffff; }
+}
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--color-secondary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+.report-footer { background: var(--bg-secondary); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: var(--spacing-lg) var(--spacing-md); margin-top: var(--spacing-lg); text-align: center; color: var(--text-secondary); font-size: 0.875rem; }
+.report-footer .container { max-width: 100%; }
+.report-footer p { margin-bottom: var(--spacing-sm); }
+.report-footer p strong { color: var(--text-primary); font-weight: 600; }
+.report-footer .mt-4 { margin-top: var(--spacing-lg); }
+.report-footer a { color: var(--color-primary); text-decoration: none; transition: color var(--transition-fast); }
+.report-footer a:hover { color: var(--color-primary-dark); text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header class="header" role="banner">
+        <div class="header-left">
+            <h1>🏭 Kanban EV</h1>
+            <span class="subtitle">Simulador de Fluxo de Trabalho Ágil</span>
+        </div>
+        <div class="header-center">
+            <div class="day-info">
+                <span class="day-label">Dia</span>
+                <span class="day-value" id="currentDay">0</span>
+            </div>
+            <button id="btnNextDay" class="btn btn-primary btn-large" aria-label="Avançar para o próximo dia">🎲 Próximo Dia</button>
+        </div>
+        <div class="header-right">
+            <button id="btnRestart" class="btn btn-danger" aria-label="Reiniciar jogo">🔄 Reiniciar</button>
+            <button id="btnHelp" class="btn btn-secondary" aria-label="Abrir ajuda">❓ Ajuda</button>
+        </div>
+    </header>
+
+    <main class="main-container" role="main">
+        <section class="kanban-board" aria-label="Quadro Kanban">
+            <div class="kanban-column" data-column="backlog">
+                <div class="column-header"><h2>📋 Backlog</h2><span class="card-count">0</span></div>
+                <div class="cards-container" id="backlog" role="listbox" aria-label="Cartões no Backlog" tabindex="0"></div>
+            </div>
+            <div class="kanban-column" data-column="ready">
+                <div class="column-header"><h2>🎯 Pronto</h2><div class="wip-indicator"><span class="card-count">0</span><span class="wip-limit">/ 3</span></div></div>
+                <div class="wip-bar" data-wip-limit="3"></div>
+                <div class="cards-container" id="ready" role="listbox" aria-label="Cartões prontos para iniciar" tabindex="0"></div>
+            </div>
+            <div class="kanban-column" data-column="analysis">
+                <div class="column-header"><h2>🔍 Análise</h2><div class="wip-indicator"><span class="card-count">0</span><span class="wip-limit">/ 3</span></div></div>
+                <div class="wip-bar" data-wip-limit="3"></div>
+                <div class="agent-slot analyst" data-agent-type="analyst"><span class="agent-icon">👤</span><span class="agent-name">Analista</span><span class="agent-dice" id="analystDice">-</span></div>
+                <div class="cards-container" id="analysis" role="listbox" aria-label="Cartões em análise" tabindex="0"></div>
+            </div>
+            <div class="kanban-column" data-column="development">
+                <div class="column-header"><h2>💻 Desenvolvimento</h2><div class="wip-indicator"><span class="card-count">0</span><span class="wip-limit">/ 4</span></div></div>
+                <div class="wip-bar" data-wip-limit="4"></div>
+                <div class="agent-slot developer" data-agent-type="developer"><span class="agent-icon">👤</span><span class="agent-name">Desenvolvedor</span><span class="agent-dice" id="developerDice">-</span></div>
+                <div class="cards-container" id="development" role="listbox" aria-label="Cartões em desenvolvimento" tabindex="0"></div>
+            </div>
+            <div class="kanban-column" data-column="testing">
+                <div class="column-header"><h2>🧪 Teste</h2><div class="wip-indicator"><span class="card-count">0</span><span class="wip-limit">/ 3</span></div></div>
+                <div class="wip-bar" data-wip-limit="3"></div>
+                <div class="agent-slot tester" data-agent-type="tester"><span class="agent-icon">👤</span><span class="agent-name">Testador</span><span class="agent-dice" id="testerDice">-</span></div>
+                <div class="cards-container" id="testing" role="listbox" aria-label="Cartões em teste" tabindex="0"></div>
+            </div>
+            <div class="kanban-column completed" data-column="deployed">
+                <div class="column-header"><h2>✅ Concluído</h2><span class="card-count">0</span></div>
+                <div class="cards-container" id="deployed" role="listbox" aria-label="Cartões concluídos" tabindex="0"></div>
+            </div>
+        </section>
+
+        <aside class="sidebar" role="complementary" aria-label="Painel de controle">
+            <div class="panel stats-panel">
+                <h3>📊 Estatísticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-item"><span class="stat-label">Valor Entregue</span><span class="stat-value positive" id="totalValue">R$ 0</span></div>
+                    <div class="stat-item"><span class="stat-label">Custo Acumulado</span><span class="stat-value negative" id="totalCost">R$ 0</span></div>
+                    <div class="stat-item"><span class="stat-label">Lucro</span><span class="stat-value" id="profit">R$ 0</span></div>
+                    <div class="stat-item"><span class="stat-label">Lead Time Médio</span><span class="stat-value" id="avgLeadTime">0 dias</span></div>
+                    <div class="stat-item"><span class="stat-label">Throughput</span><span class="stat-value" id="throughput">0 / dia</span></div>
+                    <div class="stat-item"><span class="stat-label">Bloqueios</span><span class="stat-value warning" id="blockedCount">0</span></div>
+                </div>
+            </div>
+            <div class="panel team-panel">
+                <h3>👥 Equipe</h3>
+                <div class="team-members">
+                    <div class="team-member analyst" id="teamAnalyst"><div class="member-header"><span class="member-icon">🔍</span><span class="member-name">Analista</span></div><div class="member-stats"><div class="stat"><span>Eficiência:</span><span class="efficiency">2x</span></div><div class="stat"><span>Último dado:</span><span class="last-dice">-</span></div></div></div>
+                    <div class="team-member developer" id="teamDeveloper"><div class="member-header"><span class="member-icon">💻</span><span class="member-name">Desenvolvedor</span></div><div class="member-stats"><div class="stat"><span>Eficiência:</span><span class="efficiency">2x</span></div><div class="stat"><span>Último dado:</span><span class="last-dice">-</span></div></div></div>
+                    <div class="team-member tester" id="teamTester"><div class="member-header"><span class="member-icon">🧪</span><span class="member-name">Testador</span></div><div class="member-stats"><div class="stat"><span>Eficiência:</span><span class="efficiency">2x</span></div><div class="stat"><span>Último dado:</span><span class="last-dice">-</span></div></div></div>
+                </div>
+            </div>
+            <div class="panel history-panel"><h3>📜 Histórico</h3><div class="history-list" id="historyList" role="log" aria-live="polite"><p class="history-empty">Nenhuma ação ainda...</p></div></div>
+            <div class="panel actions-panel"><h3>⚡ Ações</h3><div class="actions-buttons"><button id="btnAddCard" class="btn btn-success btn-block">➕ Adicionar Cartão</button><button id="btnExportState" class="btn btn-secondary btn-block">📤 Exportar Estado</button><button id="btnImportState" class="btn btn-secondary btn-block">📥 Importar Estado</button></div></div>
+        </aside>
+    </main>
+
+    <section class="charts-section" aria-label="Gráficos e métricas">
+        <div class="charts-grid">
+            <div class="chart-container"><h3>📈 Diagrama de Fluxo Cumulativo (CFD)</h3><canvas id="cfdChart" aria-label="Gráfico de fluxo cumulativo"></canvas></div>
+            <div class="chart-container"><h3>⏱️ Lead Time por Cartão</h3><canvas id="leadTimeChart" aria-label="Gráfico de lead time"></canvas></div>
+            <div class="chart-container"><h3>💰 Desempenho Financeiro</h3><canvas id="financialChart" aria-label="Gráfico financeiro"></canvas></div>
+            <div class="chart-container"><h3>📊 Throughput por Dia</h3><canvas id="throughputChart" aria-label="Gráfico de throughput"></canvas></div>
+        </div>
+    </section>
+
+    <footer class="footer" role="contentinfo">
+        <div class="footer-left">
+            <span class="legend-item"><span class="legend-color analyst"></span> Analista</span>
+            <span class="legend-item"><span class="legend-color developer"></span> Desenvolvedor</span>
+            <span class="legend-item"><span class="legend-color tester"></span> Testador</span>
+        </div>
+        <div class="footer-center">
+            <a href="https://delean-mafra.github.io/Ahtools/CC_BY_NC_4.0"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="license-link"
+               title="Licença Creative Commons BY-NC 4.0">
+                <img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by-nc.svg"
+                     alt="CC BY-NC 4.0"
+                     class="license-badge">
+                <span class="license-text">© 2026 Delean P. Mafra • CC BY-NC 4.0</span>
+            </a>
+        </div>
+        <div class="footer-right"><span id="gameStatus">Aguardando início...</span></div>
+    </footer>
+
+    <div id="modalCard" class="modal" role="dialog" aria-labelledby="modalCardTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modalCardTitle">Adicionar Cartão</h2><button class="modal-close" aria-label="Fechar modal">&times;</button></div>
+            <form id="formCard" class="modal-body">
+                <div class="form-group"><label for="cardTitle">Título *</label><input type="text" id="cardTitle" name="title" required placeholder="Ex: Implementar login" maxlength="50"></div>
+                <div class="form-group"><label for="cardDescription">Descrição</label><textarea id="cardDescription" name="description" rows="3" placeholder="Descrição opcional da tarefa"></textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="cardEffort">Esforço *</label><input type="number" id="cardEffort" name="effort" required min="1" max="20" value="5"></div>
+                    <div class="form-group"><label for="cardValue">Valor (R$) *</label><input type="number" id="cardValue" name="value" required min="10" max="1000" value="100"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="cardPriority">Prioridade</label><select id="cardPriority" name="priority"><option value="low">Baixa</option><option value="medium" selected>Média</option><option value="high">Alta</option><option value="urgent">Urgente</option></select></div>
+                    <div class="form-group"><label for="cardCategory">Categoria</label><select id="cardCategory" name="category"><option value="feature">Feature</option><option value="bug">Bug</option><option value="improvement">Melhoria</option><option value="tech-debt">Dívida Técnica</option></select></div>
+                </div>
+            </form>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" id="btnCancelCard">Cancelar</button><button type="submit" form="formCard" class="btn btn-primary">Salvar</button></div>
+        </div>
+    </div>
+
+    <div id="modalHelp" class="modal" role="dialog" aria-labelledby="modalHelpTitle" aria-hidden="true">
+        <div class="modal-content modal-large">
+            <div class="modal-header"><h2 id="modalHelpTitle">❓ Como Jogar</h2><button class="modal-close" aria-label="Fechar modal">&times;</button></div>
+            <div class="modal-body help-content">
+                <section><h3>🎯 Objetivo</h3><p>Gerencie o fluxo de trabalho de uma equipe de desenvolvimento para entregar o máximo de valor possível, respeitando os limites de WIP e minimizando o lead time.</p></section>
+                <section><h3>🎲 Mecânica do Jogo</h3><ul><li><strong>Próximo Dia:</strong> A cada dia, dados são rolados para cada membro da equipe (1-6). Este é o trabalho que podem realizar.</li><li><strong>Especialistas:</strong> Cada membro dobra seu valor quando trabalha em sua área de especialização.</li><li><strong>Custo Diário:</strong> R$ 300 por dia de operação.</li></ul></section>
+                <section><h3>📋 Colunas do Quadro</h3><ul><li><strong>Backlog:</strong> Tarefas aguardando para serem iniciadas.</li><li><strong>Pronto:</strong> Tarefas prontas para serem puxadas.</li><li><strong>Análise:</strong> Tarefas sendo analisadas pelo Analista.</li><li><strong>Desenvolvimento:</strong> Tarefas sendo desenvolvidas.</li><li><strong>Teste:</strong> Tarefas sendo testadas.</li><li><strong>Concluído:</strong> Tarefas entregues que geram valor.</li></ul></section>
+                <section><h3>🚦 Limites de WIP</h3><p>Cada coluna tem um limite máximo de cartões. Quando atingido, novos cartões não podem entrar até que espaço seja liberado. Isso ajuda a identificar gargalos.</p></section>
+                <section><h3>🖱️ Controles</h3><ul><li><strong>Arrastar:</strong> Mova cartões entre colunas (respeitando WIP).</li><li><strong>Próximo Dia:</strong> Processa o trabalho do dia atual.</li><li><strong>Adicionar Cartão:</strong> Crie novos cartões no Backlog.</li></ul></section>
+                <section><h3>📊 Métricas</h3><ul><li><strong>Lead Time:</strong> Tempo desde "Pronto" até "Concluído".</li><li><strong>Throughput:</strong> Cartões entregues por dia.</li><li><strong>CFD:</strong> Visualização do fluxo acumulado ao longo do tempo.</li></ul></section>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-primary modal-close-btn">Entendi!</button></div>
+        </div>
+    </div>
+
+    <div id="modalExport" class="modal" role="dialog" aria-labelledby="modalExportTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modalExportTitle">📤 Exportar Estado</h2><button class="modal-close" aria-label="Fechar modal">&times;</button></div>
+            <div class="modal-body"><p>Copie o JSON abaixo para salvar o estado atual do jogo:</p><textarea id="exportData" class="export-textarea" readonly></textarea></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary modal-close-btn">Fechar</button><button type="button" class="btn btn-primary" id="btnCopyExport">Copiar</button></div>
+        </div>
+    </div>
+
+    <div id="modalImport" class="modal" role="dialog" aria-labelledby="modalImportTitle" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modalImportTitle">📥 Importar Estado</h2><button class="modal-close" aria-label="Fechar modal">&times;</button></div>
+            <div class="modal-body"><p>Cole o JSON exportado anteriormente:</p><textarea id="importData" class="export-textarea" placeholder='{"day": 0, "cards": [...], ...}'></textarea></div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button><button type="button" class="btn btn-primary" id="btnConfirmImport">Importar</button></div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <footer class="report-footer">
+        <div class="container">
+            <p><strong>🏭 Kanban EV - Simulador Educacional de Fluxo de Trabalho Ágil</strong></p>
+            <p>Hack Club - Hackatime Projects.</p>
+            <p><small>Licença: <a href="https://delean-mafra.github.io/Ahtools/CC_BY_NC_4.0" target="_blank" rel="noopener noreferrer">CC BY-NC 4.0</a> • © 2026 Delean P. Mafra</small></p>
+        </div>
+    </footer>
+
+    <script src="templates/regras_demo.js"></script>
+</body>
+</html>
