@@ -1,5 +1,8 @@
 # 🏭 Kanban EV - Simulador Educacional de Fluxo de Trabalho Ágil
 
+<img width="1902" height="915" alt="Sem título" src="https://github.com/user-attachments/assets/4a9374d6-3436-47e2-a494-0498916ba4e1" />
+
+
 Um simulador educacional completo de metodologia Kanban, inspirado no Kanban Board Game e Kanban EV.
 
 ## 📋 Descrição
@@ -194,3 +197,4 @@ Inspirado em:
 ---
 
 **Desenvolvido para fins educacionais em metodologias ágeis e Kanban.**
+
