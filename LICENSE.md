@@ -165,7 +165,7 @@ Se sua empresa deseja utilizar esta solução ou conceitos semelhantes em ambien
 ## 🏆 **RECONHECIMENTO E CRÉDITOS**
 
 **Links:**
-- 🔗 Repositório: https://github.com/Delean-Mafra/kambam_game
+- 🔗 [Delean Mafra](https://github.com/Delean-Mafra)
 - 🔗 [Kanban Board Game](https://www.kanbanboardgame.com/)
 - 🔗 [Kanban EV](https://boardgamegeek.com/boardgame/284378/kanban-ev) por Vital Lacerda
 - 🔗 [getKanban](https://getkanban.com/)
@@ -179,3 +179,4 @@ Se sua empresa deseja utilizar esta solução ou conceitos semelhantes em ambien
 
 
 **Copyright © Delean Mafra - Todos os direitos reservados.**
+
