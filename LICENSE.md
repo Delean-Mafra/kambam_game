@@ -174,9 +174,7 @@ Se sua empresa deseja utilizar esta solução ou conceitos semelhantes em ambien
 
 **Última atualização:** Janeiro de 2026
 
-<!-- DOI (opcional): adicione aqui caso publique no Zenodo. -->
-
-
 
 **Copyright © Delean Mafra - Todos os direitos reservados.**
+
 
