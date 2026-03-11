@@ -128,7 +128,6 @@ Este projeto é um **simulador educacional** e não representa um produto comerc
 - **GitHub (Projeto):** [Delean-Mafra/kambam_game](https://github.com/Delean-Mafra/kambam_game)
 - **GitHub (Autor):** [Delean-Mafra](https://github.com/Delean-Mafra)
 - **LinkedIn:** [delean-mafra](https://www.linkedin.com/in/delean-mafra/)
-- **Organização:** [Hack Club - Hackatime Projects](https://flavortown.hackclub.com/)
 
 ### ✉️ **Atribuição Correta**
 Para usar, modificar ou referir-se a este projeto, utilize:
@@ -165,17 +164,18 @@ Se sua empresa deseja utilizar esta solução ou conceitos semelhantes em ambien
 
 ## 🏆 **RECONHECIMENTO E CRÉDITOS**
 
-Este projeto foi desenvolvido como parte do **Hack Club - Hackatime Projects**.
-
 **Links:**
 - 🔗 Repositório: https://github.com/Delean-Mafra/kambam_game
-- 🔗 Hack Club: https://flavortown.hackclub.com/
+- 🔗 [Kanban Board Game](https://www.kanbanboardgame.com/)
+- 🔗 [Kanban EV](https://boardgamegeek.com/boardgame/284378/kanban-ev) por Vital Lacerda
+- 🔗 [getKanban](https://getkanban.com/)
 
 ---
 
 **Última atualização:** Janeiro de 2026
 
 <!-- DOI (opcional): adicione aqui caso publique no Zenodo. -->
+
 
 
 **Copyright © Delean Mafra - Todos os direitos reservados.**
