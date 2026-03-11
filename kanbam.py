@@ -50,6 +50,70 @@ PAGE_HTML = """
         .analytics-section h5 { font-size: 1.1rem; }
         .btn-add { border: none; background: transparent; color: #5e6c84; padding: 10px; text-align: left; font-size: 0.98rem; }
         .btn-add:hover { background: #dadbe2; border-radius: 0 0 8px 8px; }
+        
+        /* ========== FOOTER COM LICENÇA ========== */
+        .report-footer { 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+            border-top: 3px solid #0066ff; 
+            padding: 30px 20px; 
+            margin-top: 40px; 
+            text-align: center; 
+            color: #b8b8b8; 
+        }
+        .report-footer .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+        }
+        .report-footer .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        .report-footer .footer-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+        .report-footer .footer-license {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            margin: 0;
+            flex-wrap: wrap;
+        }
+        .report-footer .license-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(0, 102, 255, 0.15);
+            border: 1px solid #0066ff;
+            border-radius: 6px;
+            color: #00bfff;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .report-footer .license-badge:hover {
+            background: rgba(0, 102, 255, 0.25);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+            color: #00ffff;
+        }
+        .report-footer .footer-copyright {
+            font-size: 0.9rem;
+            color: #888;
+            margin: 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .report-footer .copyright-text {
+            color: #ffffff;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -284,6 +348,23 @@ PAGE_HTML = """
         });
     }
 </script>
+    <footer class="report-footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-title">📊 Agile Kanban Analytics</p>
+                <p class="footer-license">
+                    <span>🔐 Licença:</span>
+                    <a href="https://delean-mafra.github.io/Ahtools/CC_BY_NC_4.0" target="_blank" rel="noopener noreferrer" class="license-badge">
+                        <span>📜</span>
+                        <span>CC BY-NC 4.0</span>
+                    </a>
+                </p>
+                <p class="footer-copyright">
+                    <span class="copyright-text">© 2026 Delean P. Mafra</span> | Todos os direitos de atribuição reservados
+                </p>
+            </div>
+        </div>
+    </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
