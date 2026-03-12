@@ -1,1 +1,17 @@
-Flask>=2.0
+# ===================================================================================
+# KANBAN EV GAME - Dependências do Projeto
+# ===================================================================================
+#
+# Copyright © 2026 Delean P. Mafra
+# Licença: CC BY-NC 4.0
+# https://delean-mafra.github.io/Ahtools/CC_BY_NC_4.0
+#
+# Para instalar: pip install -r requirements.txt
+# ===================================================================================
+
+# Framework Web
+Flask>=2.0.0
+
+# Servidor WSGI para produção (opcional)
+# gunicorn>=20.1.0  # Linux/Mac
+# waitress>=2.1.0   # Windows

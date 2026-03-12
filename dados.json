@@ -1,0 +1,46 @@
+{
+    "tasks": [
+        {
+            "id": "3e7f1575-6ffa-4f15-bd0c-14143fe48888",
+            "title": "teste",
+            "description": "",
+            "column": "concluido",
+            "priority": "baixa",
+            "deadline": "2026-02-28",
+            "timestamps": {
+                "backlog": "28/02/2026 20:01",
+                "sprint_backlog": "28/02/2026 20:01",
+                "andamento": "28/02/2026 20:02",
+                "concluido": "28/02/2026 20:02"
+            }
+        },
+        {
+            "id": "0ef3c275-e1ba-4da3-922d-832f483727b0",
+            "title": "teste2",
+            "description": "",
+            "column": "concluido",
+            "priority": "baixa",
+            "deadline": "2026-03-13",
+            "timestamps": {
+                "backlog": "28/02/2026 20:06",
+                "sprint_backlog": "28/02/2026 20:06",
+                "andamento": "28/02/2026 20:07",
+                "concluido": "28/02/2026 20:07"
+            }
+        },
+        {
+            "id": "c70876cd-efb7-48df-9cde-e0c2d853ccf7",
+            "title": "teste3",
+            "description": "teste3",
+            "column": "concluido",
+            "priority": "baixa",
+            "deadline": "2026-03-14",
+            "timestamps": {
+                "backlog": "28/02/2026 20:07",
+                "sprint_backlog": "11/03/2026 19:06",
+                "andamento": "11/03/2026 19:07",
+                "concluido": "11/03/2026 19:07"
+            }
+        }
+    ]
+}

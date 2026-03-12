@@ -106,21 +106,39 @@ Backlog → Pronto → Análise → Desenvolvimento → Teste → Concluído
 ## 📁 Estrutura do Projeto
 
 ```
-kanban_ev_flask/
-├── app.py                 # Servidor Flask
-├── requirements.txt       # Dependências
-├── README.md             # Este arquivo
-├── templates/
-│   └── index.html        # Template principal
-└── static/
-    ├── css/
-    │   └── style.css     # Estilos
-    └── js/
-        ├── rules.js      # Regras e configurações
-        ├── game.js       # Lógica do jogo
-        ├── graphs.js     # Gráficos
-        └── ui.js         # Interface do usuário
+kambam_game/
+├── app.py                    # Servidor Flask
+├── version.py                # Fonte única da versão (SemVer)
+├── requirements.txt          # Dependências
+├── README.md                 # Este arquivo
+├── RELEASE_NOTES_v1.1.0.md   # Nota de lançamento
+└── templates/
+    ├── index.html            # Template principal
+    ├── style.css             # Estilos
+    ├── rules.js              # Regras e configurações
+    ├── game.js               # Lógica do jogo
+    ├── graphs.js             # Gráficos
+    └── ui.js                 # Interface do usuário
 ```
+
+## 🔢 Versionamento
+
+O projeto segue **Semantic Versioning (SemVer)** no formato `MAJOR.MINOR.PATCH`.
+
+- `MAJOR`: mudanças incompatíveis
+- `MINOR`: novas funcionalidades compatíveis
+- `PATCH`: correções sem quebra de compatibilidade
+
+A versão atual fica centralizada em `version.py`:
+
+- `APP_VERSION`: versão oficial da aplicação
+- `RELEASE_DATE`: data da release
+- `get_version_info()`: metadados usados por API e template
+
+O servidor também expõe a versão por HTTP:
+
+- `GET /version`: metadados completos da versão
+- Header `X-App-Version`: incluído em todas as respostas
 
 ## ⚙️ Configuração
 
@@ -197,4 +215,5 @@ Inspirado em:
 ---
 
 **Desenvolvido para fins educacionais em metodologias ágeis e Kanban.**
+
 
