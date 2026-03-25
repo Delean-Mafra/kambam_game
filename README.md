@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19212265.svg)](https://doi.org/10.5281/zenodo.19212265)
+
 # 🏭 Kanban EV - Simulador Educacional de Fluxo de Trabalho Ágil
 
 <img width="1902" height="915" alt="Sem título" src="https://github.com/user-attachments/assets/4a9374d6-3436-47e2-a494-0498916ba4e1" />
