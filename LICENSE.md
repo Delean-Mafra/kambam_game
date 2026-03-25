@@ -10,6 +10,8 @@
 
 **Licença:** [Creative Commons Atribuição–NãoComercial 4.0 Internacional (CC BY‑NC 4.0)](https://delean-mafra.github.io/Ahtools/CC_BY_NC_4.0)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19212265.svg)](https://doi.org/10.5281/zenodo.19212265)
+
 </div>
 
 ---
