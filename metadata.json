@@ -1,0 +1,8 @@
+{
+  "name": "Kanban EV - Simulador Educacional de Fluxo Ágil",
+  "description": "Simulador educacional de metodologia ágil e fluxo de trabalho Kanban com limites de WIP, Lead Time, Throughput e CFD.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
