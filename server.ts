@@ -141,10 +141,10 @@ app.delete('/api/tasks/:id', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Tarefa removida com sucesso' });
 });
 
-// Serve templates folder for static assets (regras_demo.js, style.css, favicon.svg, etc.)
+// Serve static assets
+app.use('/static', express.static(path.join(__dirname, 'static')));
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 app.use('/assets', express.static(path.join(__dirname, 'templates')));
-app.use('/static', express.static(path.join(__dirname, 'templates')));
 
 // Serve root static files (Banner.png, etc.)
 app.use(express.static(__dirname, { index: false }));
