@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +23,7 @@ const LICENSE_INFO = {
 
 const VERSION_INFO = {
   app: 'KANBAN EV GAME',
-  number: '1.1.0',
+  number: '1.3.0',
   scheme: 'semver',
   release_date: '2026-03-12',
   build: process.env.KANBAN_EV_BUILD || 'local',
@@ -48,30 +49,30 @@ try {
     const parsed = JSON.parse(raw);
     tasks = parsed.tasks || [];
   }
-} catch (err) {
+} catch {
   console.warn('Could not read dados.json, initializing empty tasks array');
 }
 
 app.use(express.json());
 
 // Add version header to all responses
-app.use((req, res, next) => {
+app.use((_req, res, next) => {
   res.setHeader('X-App-Version', VERSION_INFO.number);
   next();
 });
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
-    message: 'Servidor Kanban EV funcionando!',
+    message: 'Servidor Kanban EV funcionando em TypeScript!',
     license: LICENSE_INFO,
     version: VERSION_INFO,
   });
 });
 
 // Version endpoint
-app.get('/version', (req: Request, res: Response) => {
+app.get('/version', (_req: Request, res: Response) => {
   res.json({
     version: VERSION_INFO,
     license: LICENSE_INFO,
@@ -79,7 +80,7 @@ app.get('/version', (req: Request, res: Response) => {
 });
 
 // License endpoint
-app.get('/license', (req: Request, res: Response) => {
+app.get('/license', (_req: Request, res: Response) => {
   res.json({
     license: LICENSE_INFO,
     terms: {
@@ -91,7 +92,7 @@ app.get('/license', (req: Request, res: Response) => {
 });
 
 // Favicon endpoint
-app.get('/favicon.ico', (req: Request, res: Response) => {
+app.get('/favicon.ico', (_req: Request, res: Response) => {
   const faviconPath = path.join(__dirname, 'templates', 'favicon.svg');
   if (fs.existsSync(faviconPath)) {
     res.type('image/svg+xml').sendFile(faviconPath);
@@ -100,8 +101,8 @@ app.get('/favicon.ico', (req: Request, res: Response) => {
   }
 });
 
-// Kanban Tasks Analytics API (from kanbam.py)
-app.get('/api/tasks', (req: Request, res: Response) => {
+// Kanban Tasks Analytics API
+app.get('/api/tasks', (_req: Request, res: Response) => {
   res.json({ tasks });
 });
 
@@ -141,20 +142,31 @@ app.delete('/api/tasks/:id', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Tarefa removida com sucesso' });
 });
 
-// Serve static assets
-app.use('/static', express.static(path.join(__dirname, 'static')));
-app.use('/templates', express.static(path.join(__dirname, 'templates')));
-app.use('/assets', express.static(path.join(__dirname, 'templates')));
+async function startServer() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const distDir = path.join(__dirname, 'dist');
 
-// Serve root static files (Banner.png, etc.)
-app.use(express.static(__dirname, { index: false }));
+  if (isProduction && fs.existsSync(distDir)) {
+    // Production: serve built static files from dist/ (as would be deployed to GitHub Pages)
+    app.use(express.static(distDir));
+    app.get('*', (_req: Request, res: Response) => {
+      res.sendFile(path.join(distDir, 'index.html'));
+    });
+  } else {
+    // Development: integrate Vite dev middleware for instant TypeScript compilation & HMR
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  }
 
-// Main page
-app.get('/', (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+  app.listen(PORT, HOST, () => {
+    console.log(`🏭 Kanban EV Game running on http://${HOST}:${PORT}`);
+  });
+}
 
-// Start server
-app.listen(PORT, HOST, () => {
-  console.log(`🏭 Kanban EV Game running on http://${HOST}:${PORT}`);
+startServer().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });

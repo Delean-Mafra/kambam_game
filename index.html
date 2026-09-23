@@ -426,38 +426,38 @@
   <div class="modal-backdrop" id="modalHelp">
     <div class="modal-box" style="max-width: 650px;">
       <div class="modal-header">
-        <h3 class="modal-title">📖 Guia do Jogo: Regras do Kanban Squad EV</h3>
+        <h3 class="modal-title">📖 Guia do Jogo: Regras do Kanban Squad EV (TypeScript Edition)</h3>
         <button class="modal-close-btn">&times;</button>
       </div>
       <div class="modal-content-scroll" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.55;">
         <h4 style="color:var(--text-primary); font-size:0.92rem;">🎯 Objetivo do Jogo</h4>
         <p>
-          Gerencie uma squad de tecnologia de alta performance. Entregue valor aos clientes cumprindo prazos e SLAs, minimizando custos operacionais e evitando penalidades por atraso para maximizar o <strong>Lucro Líquido</strong> do projeto.
+          Gerencie uma squad de tecnologia completa. Entregue valor aos clientes cumprindo prazos e SLAs, minimizando custos operacionais e evitando penalidades por atraso para maximizar o <strong>Lucro Líquido</strong> do projeto.
         </p>
 
-        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">👥 Alocação de Especialistas e Swarming</h4>
+        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">👥 Os 9 Especialistas do Squad & Separação Estrita de Funções</h4>
         <p>
-          Em cada cartão das etapas ativas (Análise, Dev, Teste), você pode clicar nos botões dos especialistas (<strong>Sofia 🔍, Lucas 💻, Rafael ⚙️, Beatriz 🧪</strong>) para alocá-los diretamente na demanda prioritária!
-          Quando dois ou mais colaboradores são alocados no mesmo cartão, ativa-se o <strong>⚡ Swarming</strong>, somando todos os seus pontos para acelerar entregas urgentes e evitar multas contratuais.
+          O squad conta com 9 especialistas divididos em 3 categorias. <strong>Cada função só pode atuar dentro de sua respectiva etapa</strong>:
         </p>
-
-        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">⚠️ Demandas Manuais de Alto Ganho & Efeitos Colaterais</h4>
-        <p>
-          Demandas de alto ganho (R$ 3.000+) pagam muito, mas têm <strong>prazos muito curtos e alto esforço</strong>.
-          Além disso, sua complexidade técnica faz com que o QA tenha até <strong>70% de chance de reprovar o cartão</strong> nos testes finais (fazendo-o retornar para Desenvolvimento) e pode gerar <strong>Regressões no Sistema</strong> (novos bugs em produção que precisam ser corrigidos com urgência!).
-        </p>
-
-        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">⚠️ Classes de Serviço e Penalidades de Prazo</h4>
-        <ul style="padding-left:1.2rem; display:flex; flex-direction:column; gap:0.4rem;">
-          <li><strong style="color:var(--cls-expedite);">🚨 Expedite (Urgente):</strong> Prioridade máxima. Pode furar limites de WIP, mas atrai multas severas se não for resolvido rápido!</li>
-          <li><strong style="color:var(--cls-fixed);">📅 Data Fixa:</strong> Tem prazo rígido. Paga 100% até a data estipulada. Perde 35% do valor por dia de atraso. Se atrasar mais de 3 dias, o cliente cancela o contrato!</li>
-          <li><strong style="color:var(--cls-standard);">📦 Padrão:</strong> Demandas comuns. Sofrem depreciação gradual de 15% por dia de atraso após o prazo.</li>
-          <li><strong style="color:var(--cls-techdebt);">🛠️ Dívida Técnica:</strong> Valor financeiro imediato menor, mas protege o time contra incidentes graves e melhora a velocidade das próximas entregas.</li>
+        <ul style="padding-left:1.2rem; display:flex; flex-direction:column; gap:0.35rem; margin-top:0.3rem;">
+          <li><strong style="color:#ec4899;">🔍 3 Analistas de Negócios (Sofia, Carlos, Mariana):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Análise & Discovery</strong>. Não podem ser alocados em Desenvolvimento ou Testes.</li>
+          <li><strong style="color:#8b5cf6;">💻 3 Desenvolvedores (Lucas, Rafael, Thiago):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Desenvolvimento</strong>. Não podem ser alocados em Análise ou Testes.</li>
+          <li><strong style="color:#10b981;">🧪 3 Testadores / QA (Beatriz, Gabriela, Rodrigo):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Testes & QA</strong>. Não podem ser alocados em Análise ou Desenvolvimento.</li>
         </ul>
 
-        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">📈 Métricas Ágeis</h4>
+        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">⚡ Swarming (Concentração de Força)</h4>
         <p>
-          Acompanhe o <strong>Diagrama de Fluxo Cumulativo (CFD)</strong> para detectar onde o trabalho está se acumulando (gargalos), monitore o <strong>Lead Time</strong> para reduzir o tempo que um item leva do Ready ao Done, e observe o <strong>Throughput</strong> diário.
+          Em cada cartão de sua respectiva etapa, você pode concentrar 1, 2 ou todos os 3 especialistas daquela disciplina no mesmo cartão. O modo <strong>⚡ Swarming</strong> combina todos os dados rolados para avançar tarefas urgentes e evitar multas por atraso.
+        </p>
+
+        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">🔒 Proteção Criptográfica Anti-Tamper (Anti-Hack)</h4>
+        <p>
+          Ao exportar o arquivo de save (JSON), o jogo assina os dados com uma chave <strong>HMAC SHA-256</strong>. Caso alguém tente alterar manualmente dinheiro, dias ou dados de tarefas no arquivo, a assinatura é invalidada e o jogo bloqueia a importação.
+        </p>
+
+        <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">🚀 Deploy no GitHub Pages</h4>
+        <p>
+          O projeto está 100% em <strong>TypeScript</strong> com build Vite. Para publicar no GitHub Pages, basta rodar <code>npm run build</code> e publicar a pasta <code>dist/</code> gerada.
         </p>
       </div>
       <div class="modal-footer">
@@ -466,22 +466,29 @@
     </div>
   </div>
 
-  <!-- MODAL: Exportar / Importar Estado -->
+  <!-- MODAL: Exportar / Importar Estado com Hash Anti-Hack -->
   <div class="modal-backdrop" id="modalExport">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
-        <h3 class="modal-title">💾 Salvar / Carregar Simulação (JSON)</h3>
+        <h3 class="modal-title">💾 Salvar / Carregar Simulação (Assinatura Anti-Hack)</h3>
         <button class="modal-close-btn">&times;</button>
       </div>
       <div class="modal-content-scroll">
-        <p style="font-size:0.75rem; color:var(--text-secondary);">
-          Copie os dados JSON abaixo para salvar o estado da sua sessão ou cole um estado anterior para continuar a simulação:
+        <div class="security-tamper-box">
+          <div class="security-badge">
+            <span>🛡️</span>
+            <span>Assinatura Criptográfica SHA-256 HMAC Ativa</span>
+          </div>
+          <span style="font-size:0.65rem; color:var(--text-muted);">Protegido contra adulteração de valores</span>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4;">
+          Copie o código JSON abaixo para salvar seu progresso. O arquivo possui uma assinatura hash criptográfica que valida a integridade dos dados: se qualquer valor for alterado manualmente (tentativa de burlar saldo, prazos ou tarefas), a carga será bloqueada.
         </p>
-        <textarea id="exportJsonTextarea" class="form-control" rows="8" style="font-family:var(--font-mono); font-size:0.72rem;"></textarea>
+        <textarea id="exportJsonTextarea" class="form-control" rows="9" style="font-family:var(--font-mono); font-size:0.72rem; margin-top:0.5rem;"></textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary modal-close-btn">Fechar</button>
-        <button type="button" class="btn btn-success" onclick="window.uiController.importData()">Importar Dados</button>
+        <button type="button" class="btn btn-success" id="btnImportAction">Validar Assinatura & Importar</button>
       </div>
     </div>
   </div>
@@ -489,12 +496,8 @@
   <!-- Toast Notification Shelf -->
   <div class="toast-shelf" id="toastShelf"></div>
 
-  <!-- Game Scripts -->
-  <script src="/static/js/audio-effects.js"></script>
-  <script src="/static/js/events-deck.js"></script>
-  <script src="/static/js/charts-engine.js"></script>
-  <script src="/static/js/game-engine.js"></script>
-  <script src="/static/js/ui-controller.js"></script>
+  <!-- TypeScript Application Entry Point (Vite & GitHub Pages ready) -->
+  <script type="module" src="/src/main.ts"></script>
 
 </body>
 </html>

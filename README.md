@@ -17,20 +17,33 @@ Esta é uma aplicação web interativa que simula um ambiente de desenvolvimento
 - Lead Time e Throughput
 - Gestão financeira de projetos
 
-## 🎯 Características
+## 🎯 Características da Versão 1.3 (TypeScript Edition)
 
-- **Interface Kanban completa** com colunas: Backlog, Pronto, Análise, Desenvolvimento, Teste, Concluído
-- **Sistema de dados** simulando variabilidade diária do trabalho
-- **Três especialistas**: Analista, Desenvolvedor, Testador (cada um dobra eficiência na sua área)
-- **Limites de WIP** configuráveis por coluna
-- **Drag and Drop** para mover cartões
-- **Gráficos em tempo real**:
-  - CFD (Cumulative Flow Diagram)
-  - Lead Time por cartão
-  - Desempenho Financeiro
-  - Throughput
-- **Sem persistência**: Recarregar a página zera o jogo (design intencional para workshops)
-- **Export/Import**: Salve e carregue estados manualmente via JSON
+- **100% TypeScript**: Código reestruturado em TypeScript com Vite, tipagem estrita e build otimizado para deploy estático.
+- **Deploy no GitHub Pages**: Executando `npm run build`, a pasta `dist/` é gerada com caminhos relativos prontos para o GitHub Pages.
+- **9 Integrantes no Squad com Separação Estrita de Funções**:
+  - 🔍 **3 Analistas de Negócios** (Sofia, Carlos, Mariana): Atuam **exclusivamente em Análise & Discovery**. Não podem ser inseridos em Desenvolvimento ou Testes.
+  - 💻 **3 Desenvolvedores** (Lucas, Rafael, Thiago): Atuam **exclusivamente em Desenvolvimento**. Não podem ser inseridos em Análise ou Testes.
+  - 🧪 **3 Testadores / QA** (Beatriz, Gabriela, Rodrigo): Atuam **exclusivamente em Testes & QA**. Não podem ser inseridos em Análise ou Desenvolvimento.
+- **Mecânica de Swarming (⚡)**: Permite concentrar múltiplos especialistas no mesmo cartão da etapa permitida para acelerar tarefas críticas.
+- **Assinatura Criptográfica Anti-Tamper (SHA-256 HMAC)**: O arquivo de save (JSON) é assinado com hash criptográfico. Qualquer tentativa de alteração manual em valores (saldo, tarefas, prazos) invalida a assinatura e bloqueia a carga (anti-hack).
+- **Interface Kanban completa** com 6 colunas: Backlog, Pronto, Análise & Discovery, Desenvolvimento, Testes & QA, Concluído.
+- **Gráficos em Tempo Real (Canvas Alta Definição)**: CFD, Distribuição de Lead Time, Finanças e Throughput.
+
+## 🚀 Como Rodar e Publicar
+
+### Desenvolvimento Local:
+```bash
+npm install
+npm run dev
+```
+Acesse `http://localhost:3000`.
+
+### Build e Deploy no GitHub Pages:
+```bash
+npm run build
+```
+A pasta `dist/` conterá todos os arquivos estáticos (HTML, JS, CSS, assets) com caminhos relativos (`base: './'`). Basta publicar o conteúdo da pasta `dist/` no branch `gh-pages` ou configurar o GitHub Actions para deploy estático.
 
 ## 🚀 Instalação
 
