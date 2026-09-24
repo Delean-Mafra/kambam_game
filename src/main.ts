@@ -2,6 +2,7 @@
  * App Entry Point (TypeScript)
  */
 
+import '../static/css/game.css';
 import { kanbanEngine } from './engine';
 import { UIController } from './ui';
 import { soundEngine } from './audio';
