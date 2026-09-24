@@ -24,8 +24,8 @@
       <!-- Day Counter -->
       <div class="day-tracker">
         <div class="day-badge">
-          <span class="day-badge-label">Dia Atual</span>
-          <span class="day-badge-value" id="currentDayValue">1</span>
+          <span class="day-badge-label">Dia do Ciclo</span>
+          <span class="day-badge-value"><span id="currentDayValue">1</span> / 30</span>
         </div>
         <button id="btnNextDay" class="btn btn-primary btn-large" title="Avançar para o próximo dia (Atalho: Barra de Espaço)">
           🎲 Próximo Dia
@@ -75,6 +75,14 @@
   <!-- Key Performance Indicators (KPIs) -->
   <section class="kpi-strip">
     <div class="kpi-grid">
+      <div class="kpi-item kpi-cash-card">
+        <span class="kpi-title">💰 Saldo em Caixa</span>
+        <span class="kpi-value profit" id="kpiCash">R$ 1.000.000</span>
+      </div>
+      <div class="kpi-item">
+        <span class="kpi-title">Lucro Líquido</span>
+        <span class="kpi-value" id="kpiProfit">R$ 0</span>
+      </div>
       <div class="kpi-item">
         <span class="kpi-title">Entregues (Done)</span>
         <span class="kpi-value" id="kpiDelivered">0</span>
@@ -107,12 +115,22 @@
         <span class="kpi-title">Penalidades Prazos</span>
         <span class="kpi-value" id="kpiPenalties">R$ 0</span>
       </div>
-      <div class="kpi-item">
-        <span class="kpi-title">Lucro Líquido</span>
-        <span class="kpi-value" id="kpiProfit">R$ 0</span>
-      </div>
     </div>
   </section>
+
+  <!-- Negative Cash / Bankruptcy Warning Banner (7-day rule) -->
+  <div id="negativeCashAlert" class="negative-cash-banner hidden">
+    <div class="negative-cash-content">
+      <span class="alert-pulse-icon">🚨</span>
+      <div class="alert-text-block">
+        <strong id="alertCashTitle">ALERTA DE CAIXA NEGATIVO!</strong>
+        <span id="alertCashMsg">A empresa está operando com saldo negativo. Se não retornar ao positivo em até 7 dias consecutivos, haverá falência por inadimplência com os colaboradores!</span>
+      </div>
+    </div>
+    <div class="negative-badge-wrap">
+      <span class="negative-days-badge" id="negativeDaysBadge">Restam 7 dias</span>
+    </div>
+  </div>
 
   <!-- Main Game Board -->
   <main class="game-viewport">
@@ -487,6 +505,40 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary modal-close-btn">Fechar</button>
         <button type="button" class="btn btn-success" id="btnImportAction">Validar Assinatura & Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Placar Geral do Gestor (Scoreboard - Dia 31) -->
+  <div class="modal-backdrop" id="modalScoreboard">
+    <div class="modal-box scoreboard-box" style="max-width: 680px;">
+      <div class="modal-header scoreboard-header">
+        <h3 class="modal-title">🏆 Fim do Ciclo de 30 Dias: Placar do Jogador</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-content-scroll" id="scoreboardBody">
+        <!-- Rendered dynamically by UIController -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary modal-close-btn">👁️ Revisar Tabuleiro</button>
+        <button type="button" class="btn btn-primary" id="btnScoreboardRestart">🔄 Jogar Novo Ciclo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Falência por Inadimplência (Game Over - 7 Dias Negativos) -->
+  <div class="modal-backdrop" id="modalBankruptcy">
+    <div class="modal-box bankruptcy-box" style="max-width: 620px;">
+      <div class="modal-header bankruptcy-header">
+        <h3 class="modal-title">🚨 GAME OVER: Falência por Inadimplência</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-content-scroll" id="bankruptcyBody">
+        <!-- Rendered dynamically by UIController -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary modal-close-btn">👁️ Revisar Tabuleiro</button>
+        <button type="button" class="btn btn-danger" id="btnBankruptcyRestart">🔄 Reiniciar Simulação</button>
       </div>
     </div>
   </div>

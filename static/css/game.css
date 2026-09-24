@@ -1311,3 +1311,276 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ==========================================================================
+   Financial Cash & Bankruptcy Enhancements
+   ========================================================================== */
+
+.kpi-cash-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.12);
+}
+
+.kpi-cash-card .kpi-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+/* Negative Cash / Bankruptcy Warning Banner */
+.negative-cash-banner {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.18) 0%, rgba(185, 28, 28, 0.28) 100%);
+  border: 1px solid #ef4444;
+  border-left: 5px solid #ef4444;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.25rem;
+  margin: 0 1.5rem 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  animation: negativeCashPulse 2s infinite ease-in-out;
+}
+
+.negative-cash-banner.hidden {
+  display: none !important;
+}
+
+@keyframes negativeCashPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
+    border-color: #ef4444;
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.55);
+    border-color: #f87171;
+  }
+}
+
+.negative-cash-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.alert-pulse-icon {
+  font-size: 1.5rem;
+  animation: alertBounce 1s infinite alternate;
+}
+
+@keyframes alertBounce {
+  from { transform: scale(0.95); }
+  to { transform: scale(1.15); }
+}
+
+.alert-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.alert-text-block strong {
+  color: #f87171;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.alert-text-block span {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.negative-days-badge {
+  background: #ef4444;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Scoreboard & Bankruptcy Modals Styling
+   ========================================================================== */
+
+.scoreboard-box {
+  background: radial-gradient(circle at top, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(251, 191, 36, 0.15);
+}
+
+.scoreboard-header {
+  border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.scoreboard-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+}
+
+.score-rank-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border: 3px solid #fbbf24;
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.score-rank-badge .rank-letter {
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.score-rank-badge .rank-score {
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.score-hero-details .score-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.score-hero-details .score-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.score-section-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.1rem 0 0.5rem 0;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.score-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+@media (max-width: 640px) {
+  .score-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.score-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.score-stat-card.highlight {
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.score-stat-card .stat-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.score-stat-card .stat-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.score-stat-card .stat-val.profit {
+  color: #34d399;
+}
+
+.score-stat-card .stat-val.cost {
+  color: #fb923c;
+}
+
+.score-stat-card .stat-val.loss,
+.score-stat-card .stat-val.warning {
+  color: #f87171;
+}
+
+/* Bankruptcy Specific Modal Styling */
+.bankruptcy-box {
+  background: radial-gradient(circle at top, rgba(40, 15, 15, 0.98) 0%, rgba(20, 10, 10, 0.99) 100%);
+  border: 1px solid #ef4444;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 28px rgba(239, 68, 68, 0.25);
+}
+
+.bankruptcy-header {
+  border-bottom: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.bankruptcy-hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.bankruptcy-icon {
+  font-size: 2.2rem;
+}
+
+.bankruptcy-info h3 {
+  color: #ef4444;
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+}
+
+.bankruptcy-info p {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.bankruptcy-lesson-box {
+  margin-top: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+  font-size: 0.76rem;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.bankruptcy-lesson-box strong {
+  color: #f1f5f9;
+  display: block;
+  margin-bottom: 0.25rem;
+}

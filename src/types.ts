@@ -68,15 +68,43 @@ export interface FinancialHistoryItem {
   cost: number;
   penalties: number;
   profit: number;
+  cash: number;
 }
 
 export interface FinancialLedger {
+  initialCash: number;
+  currentCash: number;
   totalRevenue: number;
   totalCost: number;
   totalPenalties: number;
   bonusEarned: number;
   netProfit: number;
+  consecutiveNegativeDays: number;
+  maxNegativeDaysAllowed: number;
+  isBankrupt: boolean;
   history: FinancialHistoryItem[];
+}
+
+export type GameOverReason = 'bankruptcy' | 'completed' | null;
+
+export interface GameScore {
+  totalScore: number;
+  rank: 'S' | 'A' | 'B' | 'C' | 'D';
+  rankTitle: string;
+  deliveredCount: number;
+  onTimeCount: number;
+  onTimeRate: number;
+  delayedCount: number;
+  avgLeadTime: string;
+  throughput: string;
+  initialCash: number;
+  finalCash: number;
+  netProfit: number;
+  totalRevenue: number;
+  totalCost: number;
+  totalPenalties: number;
+  wipRemaining: number;
+  finishedDay: number;
 }
 
 export interface CFDPoint {

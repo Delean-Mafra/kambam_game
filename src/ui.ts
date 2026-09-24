@@ -7,7 +7,7 @@
 import { KanbanGameEngine } from './engine';
 import { chartsEngine } from './charts';
 import { soundEngine } from './audio';
-import type { Card, EventLog, SquadMember } from './types';
+import type { Card, EventLog, SquadMember, GameScore } from './types';
 
 export class UIController {
   private engine: KanbanGameEngine;
@@ -52,6 +52,30 @@ export class UIController {
         this.updateAll();
         soundEngine.playCardDrop();
         this.showToast('Simulação reiniciada para o Dia 1 com sucesso!', 'success');
+      });
+    }
+
+    // Scoreboard Restart Button
+    const btnScoreboardRestart = document.getElementById('btnScoreboardRestart');
+    if (btnScoreboardRestart) {
+      btnScoreboardRestart.addEventListener('click', () => {
+        this.engine.reset();
+        this.closeModals();
+        this.updateAll();
+        soundEngine.playCardDrop();
+        this.showToast('Novo ciclo de 30 dias iniciado! Bom jogo!', 'success');
+      });
+    }
+
+    // Bankruptcy Restart Button
+    const btnBankruptcyRestart = document.getElementById('btnBankruptcyRestart');
+    if (btnBankruptcyRestart) {
+      btnBankruptcyRestart.addEventListener('click', () => {
+        this.engine.reset();
+        this.closeModals();
+        this.updateAll();
+        soundEngine.playCardDrop();
+        this.showToast('Simulação reiniciada. Controle custos e prazos para não entrar no vermelho!', 'info');
       });
     }
 
@@ -302,6 +326,23 @@ export class UIController {
     if (result.event) {
       this.showEventToast(result.event);
     }
+
+    if (result.gameOver) {
+      if (this.autoPlayInterval) {
+        clearInterval(this.autoPlayInterval);
+        this.autoPlayInterval = null;
+        const btn = document.getElementById('btnAutoPlay');
+        if (btn) btn.textContent = '▶️ Auto-Play';
+      }
+
+      if (result.gameOverReason === 'bankruptcy' && result.score) {
+        soundEngine.playWarning();
+        this.showBankruptcyModal(result.score);
+      } else if (result.gameOverReason === 'completed' && result.score) {
+        soundEngine.playTaskComplete();
+        this.showScoreboardModal(result.score);
+      }
+    }
   }
 
   public toggleAutoPlay(): void {
@@ -312,7 +353,17 @@ export class UIController {
       if (btn) btn.textContent = '▶️ Auto-Play';
       this.showToast('Auto-play pausado.', 'info');
     } else {
+      if (this.engine.isGameOver) {
+        this.showToast('A simulação já foi encerrada. Reinicie para jogar novamente!', 'warning');
+        return;
+      }
       this.autoPlayInterval = setInterval(() => {
+        if (this.engine.isGameOver) {
+          clearInterval(this.autoPlayInterval);
+          this.autoPlayInterval = null;
+          if (btn) btn.textContent = '▶️ Auto-Play';
+          return;
+        }
         this.handleNextDay();
       }, 2500);
       if (btn) btn.textContent = '⏸️ Pausar';
@@ -330,7 +381,9 @@ export class UIController {
 
   private renderHeader(): void {
     const dayVal = document.getElementById('currentDayValue');
-    if (dayVal) dayVal.textContent = this.engine.day.toString();
+    if (dayVal) {
+      dayVal.textContent = Math.min(31, this.engine.day).toString();
+    }
   }
 
   /**
@@ -435,6 +488,33 @@ export class UIController {
     const profitCls = kpis.profit >= 0 ? 'profit' : 'loss';
     const profitSign = kpis.profit >= 0 ? '+' : '';
     setVal('kpiProfit', `${profitSign}R$ ${kpis.profit.toLocaleString('pt-BR')}`, profitCls);
+
+    // Saldo em Caixa (Cash Balance)
+    const cashCls = kpis.cash >= 0 ? 'profit' : 'loss';
+    const cashSign = kpis.cash < 0 ? '-' : '';
+    setVal('kpiCash', `${cashSign}R$ ${Math.abs(kpis.cash).toLocaleString('pt-BR')}`, cashCls);
+
+    // Negative Cash Warning Banner (7-day rule)
+    const banner = document.getElementById('negativeCashAlert');
+    const alertTitle = document.getElementById('alertCashTitle');
+    const alertMsg = document.getElementById('alertCashMsg');
+    const negativeDaysBadge = document.getElementById('negativeDaysBadge');
+
+    if (kpis.consecutiveNegativeDays > 0) {
+      if (banner) banner.classList.remove('hidden');
+      const daysLeft = Math.max(0, kpis.maxNegativeDaysAllowed - kpis.consecutiveNegativeDays);
+      if (alertTitle) {
+        alertTitle.textContent = `🚨 ALERTA DE CAIXA NEGATIVO (${kpis.consecutiveNegativeDays}/${kpis.maxNegativeDaysAllowed} dias no vermelho)`;
+      }
+      if (alertMsg) {
+        alertMsg.textContent = `A empresa está com saldo devedor de -R$ ${Math.abs(kpis.cash).toLocaleString('pt-BR')}. Se não retornar ao saldo positivo em até ${daysLeft} dia(s), haverá falência por inadimplência com a equipe!`;
+      }
+      if (negativeDaysBadge) {
+        negativeDaysBadge.textContent = daysLeft > 0 ? `Restam ${daysLeft} dia(s) para falência` : `FALÊNCIA IMINENTE`;
+      }
+    } else {
+      if (banner) banner.classList.add('hidden');
+    }
   }
 
   private renderBoard(): void {
@@ -503,16 +583,32 @@ export class UIController {
       'tech-debt': '🛠️ Dívida Técnica',
     };
 
-    const daysLeft = card.deadlineDay - this.engine.day;
     let deadlineClass = 'ontime';
-    let deadlineText = `Prazo: D${card.deadlineDay} (${daysLeft}d restantes)`;
+    let deadlineText = '';
 
-    if (daysLeft === 0) {
-      deadlineClass = 'warning';
-      deadlineText = `Prazo: HOJE! (D${card.deadlineDay})`;
-    } else if (daysLeft < 0) {
-      deadlineClass = 'delayed';
-      deadlineText = `⚠️ Atrasado há ${Math.abs(daysLeft)}d!`;
+    if (card.column === 'deployed') {
+      // Concluída: O tempo para de contar e não aparece como vencida no presente!
+      const finishDay = card.completedDay || this.engine.day;
+      if (finishDay <= card.deadlineDay) {
+        deadlineClass = 'ontime';
+        deadlineText = `✅ Concluída no prazo (D${finishDay})`;
+      } else {
+        const delay = finishDay - card.deadlineDay;
+        deadlineClass = 'delayed';
+        deadlineText = `⚠️ Concluída com atraso de ${delay}d (D${finishDay})`;
+      }
+    } else {
+      const daysLeft = card.deadlineDay - this.engine.day;
+      if (daysLeft > 0) {
+        deadlineClass = 'ontime';
+        deadlineText = `Prazo: D${card.deadlineDay} (${daysLeft}d restantes)`;
+      } else if (daysLeft === 0) {
+        deadlineClass = 'warning';
+        deadlineText = `Prazo: HOJE! (D${card.deadlineDay})`;
+      } else {
+        deadlineClass = 'delayed';
+        deadlineText = `⚠️ Atrasado há ${Math.abs(daysLeft)}d!`;
+      }
     }
 
     let readyBadge = '';
@@ -525,7 +621,7 @@ export class UIController {
     }
 
     let blockedBadge = '';
-    if (card.isBlocked) {
+    if (card.isBlocked && card.column !== 'deployed') {
       blockedBadge = `
         <div class="blocked-banner">
           <span>⛔ Impedimento Externo</span>
@@ -804,5 +900,150 @@ export class UIController {
     } else {
       this.showToast(result.message, 'danger');
     }
+  }
+
+  /**
+   * Displays the Final Scoreboard Modal (Day 31 End of Cycle)
+   */
+  public showScoreboardModal(score: GameScore): void {
+    const modal = document.getElementById('modalScoreboard');
+    const body = document.getElementById('scoreboardBody');
+    if (!modal || !body) return;
+
+    const rankColors: Record<string, string> = {
+      'S': '#fbbf24',
+      'A': '#10b981',
+      'B': '#3b82f6',
+      'C': '#8b5cf6',
+      'D': '#ef4444',
+    };
+    const rankColor = rankColors[score.rank] || '#10b981';
+
+    body.innerHTML = `
+      <div class="scoreboard-hero">
+        <div class="score-rank-badge" style="border-color: ${rankColor}; color: ${rankColor};">
+          <span class="rank-letter">${score.rank}</span>
+          <span class="rank-score">${score.totalScore} pts</span>
+        </div>
+        <div class="score-hero-details">
+          <h3 class="score-title">${score.rankTitle}</h3>
+          <p class="score-subtitle">Simulação finalizada com sucesso no encerramento do Dia 30 (Dia ${score.finishedDay}).</p>
+        </div>
+      </div>
+
+      <div class="score-section-title">💰 Desempenho Financeiro & Caixa</div>
+      <div class="score-stat-grid">
+        <div class="score-stat-card">
+          <span class="stat-label">Saldo Inicial</span>
+          <span class="stat-val">R$ ${score.initialCash.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card highlight">
+          <span class="stat-label">Saldo Final em Caixa</span>
+          <span class="stat-val ${score.finalCash >= 0 ? 'profit' : 'loss'}">
+            ${score.finalCash < 0 ? '-' : ''}R$ ${Math.abs(score.finalCash).toLocaleString('pt-BR')}
+          </span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Lucro Líquido Acumulado</span>
+          <span class="stat-val ${score.netProfit >= 0 ? 'profit' : 'loss'}">
+            ${score.netProfit >= 0 ? '+' : ''}R$ ${score.netProfit.toLocaleString('pt-BR')}
+          </span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Faturamento Total</span>
+          <span class="stat-val profit">R$ ${score.totalRevenue.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Custos com Pessoal</span>
+          <span class="stat-val cost">R$ ${score.totalCost.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Penalidades por Atraso</span>
+          <span class="stat-val ${score.totalPenalties > 0 ? 'warning' : 'profit'}">-R$ ${score.totalPenalties.toLocaleString('pt-BR')}</span>
+        </div>
+      </div>
+
+      <div class="score-section-title">📊 Eficiência Operacional & Métricas de Fluxo</div>
+      <div class="score-stat-grid">
+        <div class="score-stat-card">
+          <span class="stat-label">Demandas Entregues</span>
+          <span class="stat-val" style="color: #60a5fa;">${score.deliveredCount} itens</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Entregas no Prazo</span>
+          <span class="stat-val profit">${score.onTimeCount} (${score.onTimeRate}%)</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Entregas com Atraso</span>
+          <span class="stat-val ${score.delayedCount > 0 ? 'warning' : 'profit'}">${score.delayedCount} itens</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Lead Time Médio</span>
+          <span class="stat-val">${score.avgLeadTime} dias</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Throughput Médio</span>
+          <span class="stat-val">${score.throughput} /dia</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">WIP Restante</span>
+          <span class="stat-val">${score.wipRemaining} itens</span>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add('active');
+  }
+
+  /**
+   * Displays the Bankruptcy Modal (GameOver by 7 Consecutive Negative Cash Days)
+   */
+  public showBankruptcyModal(score: GameScore): void {
+    const modal = document.getElementById('modalBankruptcy');
+    const body = document.getElementById('bankruptcyBody');
+    if (!modal || !body) return;
+
+    body.innerHTML = `
+      <div class="bankruptcy-hero">
+        <div class="bankruptcy-icon">🚨</div>
+        <div class="bankruptcy-info">
+          <h3>Operações Encerradas por Falta de Caixa!</h3>
+          <p>
+            A empresa operou por <strong>7 dias consecutivos com saldo devedor</strong>.
+            Sem capital para honrar os pagamentos diários dos 9 especialistas do squad, as atividades foram
+            interrompidas por inadimplência.
+          </p>
+        </div>
+      </div>
+
+      <div class="score-stat-grid" style="margin-top: 1rem;">
+        <div class="score-stat-card highlight" style="border-color: #ef4444;">
+          <span class="stat-label">Saldo Devedor no Encerramento</span>
+          <span class="stat-val loss">-R$ ${Math.abs(score.finalCash).toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Dia da Interrupção</span>
+          <span class="stat-val">Dia ${score.finishedDay} de 30</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Prejuízo Acumulado</span>
+          <span class="stat-val loss">R$ ${score.netProfit.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Pontuação do Jogador</span>
+          <span class="stat-val">${score.totalScore} pts (${score.rankTitle})</span>
+        </div>
+      </div>
+
+      <div class="bankruptcy-lesson-box">
+        <strong>💡 Lição de Governança Ágil (Little's Law & Cash Flow):</strong>
+        <p>
+          Controlar limites de WIP (Work In Progress) e focar em finalizar itens antes de puxar novas demandas
+          é indispensável para garantir fluxo contínuo de receita e evitar que multas e custos fixos superem os ganhos!
+        </p>
+      </div>
+    `;
+
+    modal.classList.add('active');
   }
 }

@@ -41,9 +41,13 @@ Acesse `http://localhost:3000`.
 
 ### Build e Deploy no GitHub Pages:
 ```bash
+# 1. Gerar o build de produção (compila TypeScript e gera a pasta dist/)
 npm run build
+
+# 2. Publicar diretamente no GitHub Pages via gh-pages:
+npm run deploy
 ```
-A pasta `dist/` conterá todos os arquivos estáticos (HTML, JS, CSS, assets) com caminhos relativos (`base: './'`). Basta publicar o conteúdo da pasta `dist/` no branch `gh-pages` ou configurar o GitHub Actions para deploy estático.
+O comando `npm run deploy` utiliza o pacote `gh-pages` para enviar o conteúdo otimizado da pasta `dist/` diretamente para o branch `gh-pages` do seu repositório no GitHub.
 
 ## 🚀 Instalação
 

@@ -12,7 +12,9 @@ import type {
   CFDPoint,
   DailyDelivery,
   EventLog,
-  GameExportData
+  GameExportData,
+  GameOverReason,
+  GameScore
 } from './types';
 import { SQUAD_EVENTS } from './events';
 import { soundEngine } from './audio';
@@ -28,6 +30,9 @@ export class KanbanGameEngine {
   public dailyDelivered: DailyDelivery[] = [];
   public eventsHistory: EventLog[] = [];
   public cards: Card[] = [];
+  public isGameOver: boolean = false;
+  public gameOverReason: GameOverReason = null;
+  public finalScore: GameScore | null = null;
 
   constructor() {
     this.wipLimits = {
@@ -41,11 +46,16 @@ export class KanbanGameEngine {
 
     this.agents = this.createSquadMembers();
     this.financial = {
+      initialCash: 1000000,
+      currentCash: 1000000,
       totalRevenue: 0,
       totalCost: 0,
       totalPenalties: 0,
       bonusEarned: 0,
       netProfit: 0,
+      consecutiveNegativeDays: 0,
+      maxNegativeDaysAllowed: 7,
+      isBankrupt: false,
       history: [],
     };
 
@@ -173,6 +183,9 @@ export class KanbanGameEngine {
   public reset(): void {
     this.day = 1;
     this.lastEvent = null;
+    this.isGameOver = false;
+    this.gameOverReason = null;
+    this.finalScore = null;
 
     this.wipLimits = {
       backlog: 999,
@@ -186,11 +199,16 @@ export class KanbanGameEngine {
     this.agents = this.createSquadMembers();
 
     this.financial = {
+      initialCash: 1000000,
+      currentCash: 1000000,
       totalRevenue: 0,
       totalCost: 0,
       totalPenalties: 0,
       bonusEarned: 0,
       netProfit: 0,
+      consecutiveNegativeDays: 0,
+      maxNegativeDaysAllowed: 7,
+      isBankrupt: false,
       history: [],
     };
 
@@ -492,6 +510,12 @@ export class KanbanGameEngine {
       card.completedDay = this.day;
       const earned = Math.max(0, card.currentValue);
       this.financial.totalRevenue += earned;
+      this.financial.netProfit = this.financial.totalRevenue - this.financial.totalCost - this.financial.totalPenalties + (this.financial.bonusEarned || 0);
+      this.financial.currentCash = this.financial.initialCash + this.financial.netProfit;
+      if (this.financial.currentCash >= 0) {
+        this.financial.consecutiveNegativeDays = 0;
+        this.financial.isBankrupt = false;
+      }
 
       // Free all assigned agents
       if (card.assignedAgents) {
@@ -614,8 +638,54 @@ export class KanbanGameEngine {
   /**
    * ADVANCE TO NEXT DAY
    */
-  public nextDay(): { day: number; event: EventLog | null } {
+  public nextDay(): {
+    day: number;
+    event: EventLog | null;
+    gameOver?: boolean;
+    gameOverReason?: GameOverReason;
+    score?: GameScore | null;
+  } {
+    if (this.isGameOver) {
+      return {
+        day: this.day,
+        event: this.lastEvent,
+        gameOver: true,
+        gameOverReason: this.gameOverReason,
+        score: this.finalScore,
+      };
+    }
+
     this.day += 1;
+
+    // Check if reached Day 31 (end of 30-day simulation cycle)
+    if (this.day >= 31) {
+      this.isGameOver = true;
+      this.gameOverReason = 'completed';
+      this.finalScore = this.calculateScore();
+      this.recordCFDSnapshot();
+      this.recordFinancialSnapshot();
+
+      const finalEvent: EventLog = {
+        day: 31,
+        title: '🏁 FIM DO CICLO (DIA 31): Simulação Concluída!',
+        badge: 'Ciclo Encerrado',
+        type: 'positive',
+        description: 'Parabéns! O squad completou o ciclo mensal de 30 dias de operação ágil.',
+        impactText: 'Confira seu placar geral (Score) e o desempenho financeiro e operacional.',
+        customResult: `Score Final: ${this.finalScore.totalScore} pts (Rank ${this.finalScore.rank})`,
+      };
+      this.eventsHistory.unshift(finalEvent);
+      this.lastEvent = finalEvent;
+
+      return {
+        day: 31,
+        event: finalEvent,
+        gameOver: true,
+        gameOverReason: 'completed',
+        score: this.finalScore,
+      };
+    }
+
     soundEngine.playDiceRoll();
 
     // 1. Roll dice & reset temporary states
@@ -796,6 +866,33 @@ export class KanbanGameEngine {
     });
 
     this.financial.netProfit = this.financial.totalRevenue - this.financial.totalCost - this.financial.totalPenalties + (this.financial.bonusEarned || 0);
+    this.financial.currentCash = this.financial.initialCash + this.financial.netProfit;
+
+    // 7. Check 7-Day Negative Cash Bankruptcy Rule
+    if (this.financial.currentCash < 0) {
+      this.financial.consecutiveNegativeDays += 1;
+      if (this.financial.consecutiveNegativeDays >= this.financial.maxNegativeDaysAllowed) {
+        this.financial.isBankrupt = true;
+        this.isGameOver = true;
+        this.gameOverReason = 'bankruptcy';
+        this.finalScore = this.calculateScore();
+
+        const bankruptcyEvent: EventLog = {
+          day: this.day,
+          title: '🚨 FALÊNCIA POR INADIMPLÊNCIA: Operações Encerradas!',
+          badge: 'Falência / Game Over',
+          type: 'critical',
+          description: `A empresa operou no vermelho por ${this.financial.consecutiveNegativeDays} dias consecutivos e não possui mais caixa para pagar os 9 colaboradores do squad.`,
+          impactText: `Saldo final em caixa: -R$ ${Math.abs(this.financial.currentCash).toLocaleString('pt-BR')}. As atividades foram interrompidas.`,
+          customResult: `Fim de Jogo! Pontuação Final: ${this.finalScore.totalScore} pts.`,
+        };
+        this.eventsHistory.unshift(bankruptcyEvent);
+        this.lastEvent = bankruptcyEvent;
+      }
+    } else {
+      this.financial.consecutiveNegativeDays = 0;
+      this.financial.isBankrupt = false;
+    }
 
     this.recordCFDSnapshot();
     this.recordFinancialSnapshot();
@@ -803,6 +900,91 @@ export class KanbanGameEngine {
     return {
       day: this.day,
       event: this.lastEvent,
+      gameOver: this.isGameOver,
+      gameOverReason: this.gameOverReason,
+      score: this.finalScore,
+    };
+  }
+
+  public calculateScore(): GameScore {
+    const delivered = this.cards.filter(c => c.column === 'deployed');
+    const inProgress = this.cards.filter(c => c.column !== 'backlog' && c.column !== 'deployed');
+    const onTime = delivered.filter(c => (c.completedDay || 0) <= c.deadlineDay);
+    const delayed = delivered.filter(c => (c.completedDay || 0) > c.deadlineDay);
+    const onTimeRate = delivered.length > 0 ? Math.round((onTime.length / delivered.length) * 100) : 0;
+
+    const leadTimes = delivered.map(c => Math.max(1, (c.completedDay || 1) - (c.startedDay || 1)));
+    const avgLead = leadTimes.length > 0 ? (leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length).toFixed(1) : '0.0';
+    const effectiveDays = Math.max(1, Math.min(30, this.day));
+    const throughput = (delivered.length / effectiveDays).toFixed(2);
+
+    // Scoring algorithm:
+    // Base: 1000 pts
+    // + 500 pts per card delivered
+    // + 300 pts bonus per on-time delivery
+    // - 250 pts per delayed delivery
+    // - penalidades financeiras acumuladas (proporcional)
+    // + 1 pt a cada R$ 100 de lucro líquido (ou dedução se prejuízo)
+    // + 1000 pts se caixa final positivo
+    // - 3000 pts se falência por inadimplência
+    let rawScore = 1000;
+    rawScore += delivered.length * 500;
+    rawScore += onTime.length * 300;
+    rawScore -= delayed.length * 250;
+    rawScore -= Math.min(2500, Math.round(this.financial.totalPenalties / 10));
+    rawScore += Math.round(this.financial.netProfit / 100);
+
+    if (this.financial.currentCash > 0) {
+      rawScore += 1000;
+    }
+
+    if (this.gameOverReason === 'bankruptcy') {
+      rawScore = Math.max(0, rawScore - 3000);
+    }
+
+    const totalScore = Math.max(0, Math.round(rawScore));
+
+    let rank: 'S' | 'A' | 'B' | 'C' | 'D' = 'C';
+    let rankTitle = '🥉 Sobrevivente do Fluxo';
+
+    if (this.gameOverReason === 'bankruptcy') {
+      rank = 'D';
+      rankTitle = '🚨 Falência Operacional (Inadimplência)';
+    } else if (totalScore >= 8000) {
+      rank = 'S';
+      rankTitle = '🏆 Diretor(a) Lendário(a) de Operações';
+    } else if (totalScore >= 6000) {
+      rank = 'A';
+      rankTitle = '🥇 Líder Ágil Estratégico(a)';
+    } else if (totalScore >= 4000) {
+      rank = 'B';
+      rankTitle = '🥈 Gerente de Squad Eficiente';
+    } else if (totalScore >= 2000) {
+      rank = 'C';
+      rankTitle = '🥉 Gestor(a) Júnior em Formação';
+    } else {
+      rank = 'D';
+      rankTitle = '⚠️ Operação sob Crise';
+    }
+
+    return {
+      totalScore,
+      rank,
+      rankTitle,
+      deliveredCount: delivered.length,
+      onTimeCount: onTime.length,
+      onTimeRate,
+      delayedCount: delayed.length,
+      avgLeadTime: avgLead,
+      throughput,
+      initialCash: this.financial.initialCash,
+      finalCash: this.financial.currentCash,
+      netProfit: this.financial.netProfit,
+      totalRevenue: this.financial.totalRevenue,
+      totalCost: this.financial.totalCost,
+      totalPenalties: this.financial.totalPenalties,
+      wipRemaining: inProgress.length,
+      finishedDay: Math.min(31, this.day),
     };
   }
 
@@ -826,6 +1008,7 @@ export class KanbanGameEngine {
       cost: this.financial.totalCost,
       penalties: this.financial.totalPenalties,
       profit: this.financial.netProfit,
+      cash: this.financial.currentCash,
     });
   }
 
@@ -837,7 +1020,8 @@ export class KanbanGameEngine {
 
     const leadTimes = delivered.map(c => Math.max(1, (c.completedDay || 1) - (c.startedDay || 1)));
     const avgLeadTime = leadTimes.length > 0 ? (leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length).toFixed(1) : '0.0';
-    const throughput = (delivered.length / Math.max(1, this.day)).toFixed(2);
+    const effectiveDays = Math.max(1, Math.min(30, this.day));
+    const throughput = (delivered.length / effectiveDays).toFixed(2);
 
     return {
       day: this.day,
@@ -851,6 +1035,13 @@ export class KanbanGameEngine {
       cost: this.financial.totalCost,
       penalties: this.financial.totalPenalties,
       profit: this.financial.netProfit,
+      cash: this.financial.currentCash,
+      initialCash: this.financial.initialCash,
+      consecutiveNegativeDays: this.financial.consecutiveNegativeDays,
+      maxNegativeDaysAllowed: this.financial.maxNegativeDaysAllowed,
+      isBankrupt: this.financial.isBankrupt,
+      isGameOver: this.isGameOver,
+      gameOverReason: this.gameOverReason,
     };
   }
 
@@ -915,6 +1106,21 @@ export class KanbanGameEngine {
       this.wipLimits = gd.wipLimits || this.wipLimits;
       this.cards = gd.cards || [];
       this.financial = gd.financial || this.financial;
+      if (this.financial.initialCash === undefined) this.financial.initialCash = 1000000;
+      if (this.financial.currentCash === undefined) {
+        this.financial.currentCash = this.financial.initialCash + (this.financial.netProfit || 0);
+      }
+      if (this.financial.consecutiveNegativeDays === undefined) {
+        this.financial.consecutiveNegativeDays = this.financial.currentCash < 0 ? 1 : 0;
+      }
+      if (this.financial.maxNegativeDaysAllowed === undefined) {
+        this.financial.maxNegativeDaysAllowed = 7;
+      }
+      this.isGameOver = this.day >= 31 || this.financial.isBankrupt;
+      this.gameOverReason = this.financial.isBankrupt ? 'bankruptcy' : (this.day >= 31 ? 'completed' : null);
+      if (this.isGameOver) {
+        this.finalScore = this.calculateScore();
+      }
       this.cfdHistory = gd.cfdHistory || [];
       this.dailyDelivered = gd.dailyDelivered || [];
       this.eventsHistory = gd.eventsHistory || [];
