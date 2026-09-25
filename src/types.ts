@@ -10,6 +10,8 @@ export type BoardColumn = 'backlog' | 'ready' | 'analysis' | 'development' | 'te
 
 export type ClassOfService = 'standard' | 'fixed-date' | 'expedite' | 'tech-debt';
 
+export type DemandType = 'story' | 'bug' | 'support' | 'docs' | 'epic';
+
 export interface SquadMember {
   id: string;
   name: string;
@@ -51,6 +53,17 @@ export interface Card {
   isHighValue: boolean;
   bugRejectionCount: number;
   hasBug?: boolean;
+  demandType?: DemandType;
+  parentEpicId?: string | null;
+  parentEpicCode?: string | null;
+  parentEpicTitle?: string | null;
+  isEpic?: boolean;
+  docCostPerDay?: number;
+  accumulatedDocCost?: number;
+  epicTotalStories?: number;
+  epicTotalBugs?: number;
+  epicSpawnedStories?: number;
+  epicSpawnedBugs?: number;
 }
 
 export interface WipLimits {

@@ -1584,3 +1584,373 @@ body {
   display: block;
   margin-bottom: 0.25rem;
 }
+
+/* ==========================================================================
+   DEMAND TYPES & EPIC / DOCS STYLES
+   ========================================================================== */
+
+.demand-pill {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.demand-pill.badge-epic {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+}
+
+.demand-pill.badge-bug {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.demand-pill.badge-support {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.demand-pill.badge-docs {
+  background: rgba(234, 179, 8, 0.18);
+  color: #fef08a;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.demand-pill.badge-story {
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+/* Epic Card Highlights */
+.kanban-card.is-epic {
+  border-left: 5px solid #a855f7 !important;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.25);
+  background: linear-gradient(145deg, var(--bg-card) 0%, rgba(30, 15, 45, 0.95) 100%);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.kanban-card.is-epic:hover {
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.45);
+  border-color: #c084fc;
+}
+
+/* Link Badge for stories/bugs spawned by an Epic */
+.epic-parent-badge {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px dashed rgba(168, 85, 247, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.68rem;
+  color: #d8b4fe;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.epic-link-icon {
+  font-size: 0.75rem;
+}
+
+.epic-link-text strong {
+  color: #f3e8ff;
+  font-weight: 700;
+}
+
+/* Progress box inside the Epic card */
+.epic-progress-box {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.epic-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.68rem;
+  color: #e9d5ff;
+}
+
+.epic-progress-stat {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #facc15;
+}
+
+.epic-progress-bar-wrap {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.epic-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7 0%, #ec4899 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.epic-capacity-note {
+  font-size: 0.62rem;
+  color: #fbbf24;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* Documentation Cost Display */
+.docs-value-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.card-value-docs-zero {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.card-value-docs-cost {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ==========================================================================
+   APP FOOTER: CC BY-NC 4.0 LICENSE & AUTHOR INFORMATION
+   ========================================================================== */
+
+.app-footer {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  margin-top: auto;
+  padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+  color: var(--text-secondary);
+}
+
+.footer-container {
+  max-width: 1720px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 2rem;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--bg-app);
+  padding: 1.25rem 1.4rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+.footer-col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-col-header h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.footer-icon {
+  font-size: 1.25rem;
+}
+
+.license-badge-pill {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+}
+
+.footer-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.footer-terms-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed rgba(255, 255, 255, 0.07);
+}
+
+.footer-terms-list strong {
+  color: var(--text-primary);
+}
+
+.footer-link-wrap {
+  margin-top: 0.25rem;
+}
+
+.footer-link {
+  font-size: 0.75rem;
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.footer-link:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+/* Author Metadata Box */
+.author-meta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.8rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.author-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.author-label {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  min-width: 110px;
+}
+
+.author-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.footer-links-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.footer-links-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.author-buttons-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-footer-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-footer-social:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.footer-attribution-box {
+  margin-top: 0.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.attr-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.attr-code {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #a7f3d0;
+  line-height: 1.35;
+  user-select: all;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+}
+
+.footer-bottom-bar {
+  max-width: 1720px;
+  margin: 1.5rem auto 0 auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+

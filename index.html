@@ -289,29 +289,123 @@
 
   </main>
 
+  <!-- App Footer: Informações do Projeto, Licença CC BY-NC 4.0 & Autor -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      
+      <!-- Coluna 1: Licença Creative Commons BY-NC 4.0 -->
+      <div class="footer-col">
+        <div class="footer-col-header">
+          <span class="footer-icon">📄</span>
+          <h4>Licença Creative Commons BY-NC 4.0</h4>
+        </div>
+        <div class="license-badge-pill">CC BY-NC 4.0</div>
+        <p class="footer-text">
+          Este projeto é disponibilizado sob os termos da licença internacional <strong>Creative Commons Atribuição-NãoComercial 4.0</strong>.
+        </p>
+        <ul class="footer-terms-list">
+          <li>
+            <strong>✅ Atribuição (BY):</strong> Você deve dar crédito apropriado ao autor, fornecer um link para a licença e indicar se mudanças foram feitas.
+          </li>
+          <li>
+            <strong>🚫 Não Comercial (NC):</strong> Você não pode usar o material para fins comerciais sem autorização expressa do autor.
+          </li>
+          <li>
+            <strong>📚 Uso Acadêmico Permitido:</strong> A utilização para fins educacionais, pesquisas acadêmicas e não-comerciais é expressamente permitida com a devida atribuição.
+          </li>
+        </ul>
+        <div class="footer-link-wrap">
+          <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer" class="footer-link">
+            🔗 Termos da Licença Creative Commons BY-NC 4.0 &rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Coluna 2: Informações do Autor e do Projeto -->
+      <div class="footer-col">
+        <div class="footer-col-header">
+          <span class="footer-icon">👤</span>
+          <h4>Informações do Autor & Projeto</h4>
+        </div>
+        <div class="author-meta-card">
+          <div class="author-meta-row">
+            <span class="author-label">🎓 Autor Original:</span>
+            <span class="author-value">Delean P. Mafra</span>
+          </div>
+          <div class="author-meta-row">
+            <span class="author-label">📦 Projeto:</span>
+            <span class="author-value">Kanban EV GAME</span>
+          </div>
+          <div class="author-meta-row">
+            <span class="author-label">📅 Data:</span>
+            <span class="author-value">Janeiro de 2026</span>
+          </div>
+          <div class="author-meta-row">
+            <span class="author-label">📊 Natureza:</span>
+            <span class="author-value">Hakatime Projects • Simulador Educacional de Fluxo Ágil (Kanban)</span>
+          </div>
+        </div>
+
+        <div class="footer-links-grid">
+          <span class="footer-links-title">🌐 Links e Conexões:</span>
+          <div class="author-buttons-row">
+            <a href="https://github.com/Delean-Mafra/kambam_game" target="_blank" rel="noopener noreferrer" class="btn-footer-social">
+              <span>🐙</span> GitHub (Projeto)
+            </a>
+            <a href="https://github.com/Delean-Mafra" target="_blank" rel="noopener noreferrer" class="btn-footer-social">
+              <span>👤</span> GitHub (Autor)
+            </a>
+            <a href="https://www.linkedin.com/in/delean-mafra" target="_blank" rel="noopener noreferrer" class="btn-footer-social">
+              <span>💼</span> LinkedIn
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-attribution-box">
+          <span class="attr-title">✉️ Atribuição Recomendada:</span>
+          <code class="attr-code">Autor: Delean P. Mafra | Licença: CC BY-NC 4.0 | Projeto: Kanban EV GAME | Ano: Janeiro de 2026</code>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom-bar">
+      <span>Kanban Squad EV • Simulador Educacional de Gestão Ágil e Fluxo Contínuo • &copy; 2026 Delean P. Mafra</span>
+    </div>
+  </footer>
+
   <!-- MODAL: Nova Demanda com Calculadora Dinâmica de Risco/Pessoas -->
   <div class="modal-backdrop" id="modalNewCard">
     <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
-        <h3 class="modal-title">➕ Criar Nova Demanda (Configurador de Prazos & Valores)</h3>
+        <h3 class="modal-title">➕ Criar Nova Demanda (Story ou Épico)</h3>
         <button class="modal-close-btn">&times;</button>
       </div>
       <form id="formNewCard">
         <div class="modal-content-scroll">
           
-          <!-- Presets rápidos -->
+          <!-- Presets rápidos: Apenas Story e Épico -->
           <div style="display:flex; flex-direction:column; gap:0.3rem; margin-bottom:0.75rem;">
-            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">Modelos Prontos de Demanda:</span>
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">Modelos Prontos de Demanda (Apenas Story & Épico):</span>
             <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('standard')">🟢 Tarefa Comum (R$ 1.800)</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('high-gain')">🟡 Alto Retorno (R$ 4.500)</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('mega-urgent')">🔴 Mega Projeto Crítico (R$ 6.500)</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('standard')">💡 Story Padrão (R$ 2.500)</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('high-gain')">💡 Story de Alto Valor (R$ 4.500)</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('epic')">💎 Épico Estratégico (R$ 45.000)</button>
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="cardTitle">Título da Demanda</label>
-            <input type="text" id="cardTitle" class="form-control" placeholder="ex: Sistema de Pagamentos Instantâneos" required>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="cardTitle">Título da Demanda</label>
+              <input type="text" id="cardTitle" class="form-control" placeholder="ex: Sistema de Pagamentos Instantâneos" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cardDemandType">Tipo de Demanda</label>
+              <select id="cardDemandType" class="form-control">
+                <option value="story" selected>💡 Story (Melhoria Contínua / Feature)</option>
+                <option value="epic">💎 Épico (> 35k - Decompõe em Stories e Bugs)</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group">
@@ -322,13 +416,13 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="cardValue">Valor Bruto de Entrega (R$)</label>
-              <input type="number" id="cardValue" class="form-control" value="3500" min="500" max="15000" step="250">
-              <span style="font-size:0.65rem; color:var(--text-muted);">Quanto maior o valor, menor é o prazo exigido!</span>
+              <input type="number" id="cardValue" class="form-control" value="3500" min="0" max="100000" step="500">
+              <span style="font-size:0.65rem; color:var(--text-muted);">Valores acima de R$ 35k são ÉPICOS e geram histórias/bugs no Backlog!</span>
             </div>
             <div class="form-group">
               <label class="form-label" for="cardDeadline">Prazo Restante (Dias corridos)</label>
-              <input type="number" id="cardDeadline" class="form-control" value="5" min="1" max="30">
-              <span style="font-size:0.65rem; color:var(--text-muted);">Calculado dinamicamente pelo valor</span>
+              <input type="number" id="cardDeadline" class="form-control" value="7" min="1" max="30">
+              <span style="font-size:0.65rem; color:var(--text-muted);">Calculado dinamicamente pelo tipo e valor</span>
             </div>
           </div>
 

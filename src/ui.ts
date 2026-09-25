@@ -131,10 +131,13 @@ export class UIController {
     if (formCard) {
       formCard.addEventListener('submit', (e) => {
         e.preventDefault();
+        const demandTypeSelect = document.getElementById('cardDemandType') as HTMLSelectElement | null;
+        const demandType = demandTypeSelect ? demandTypeSelect.value : 'story';
         const data = {
           title: (document.getElementById('cardTitle') as HTMLInputElement).value,
           description: (document.getElementById('cardDesc') as HTMLTextAreaElement).value,
           classOfService: (document.getElementById('cardClass') as HTMLSelectElement).value,
+          demandType,
           deadlineDays: (document.getElementById('cardDeadline') as HTMLInputElement).value,
           baseValue: (document.getElementById('cardValue') as HTMLInputElement).value,
           effortAnalysis: (document.getElementById('cardEffortAnalysis') as HTMLInputElement).value,
@@ -147,8 +150,12 @@ export class UIController {
         this.setupNewCardCalculator();
         this.updateAll();
 
-        if (newCard.isHighValue) {
-          this.showToast(`🔥 Demanda de alto valor [${newCard.code}] inserida! Exige Swarming de Analistas, Devs e QAs em suas respectivas fases para evitar bugs e atrasos.`, 'warning');
+        if (newCard.isEpic) {
+          this.showToast(`💎 Épico [${newCard.code}] inserido! Histórias e bugs relacionados já foram gerados no Backlog. O squad mantém fixos os 3 desenvolvedores!`, 'warning');
+        } else if (newCard.demandType === 'docs') {
+          this.showToast(`📄 Documentação [${newCard.code}] inserida! Não gera lucro; entregue rápido para minimizar o custo no caixa!`, 'info');
+        } else if (newCard.isHighValue) {
+          this.showToast(`🔥 Demanda de alto valor [${newCard.code}] inserida no Backlog!`, 'warning');
         } else {
           this.showToast(`Nova demanda [${newCard.code}] inserida no Backlog!`, 'success');
         }
@@ -192,6 +199,7 @@ export class UIController {
 
   private setupNewCardCalculator(): void {
     const valInput = document.getElementById('cardValue') as HTMLInputElement | null;
+    const typeSelect = document.getElementById('cardDemandType') as HTMLSelectElement | null;
     const deadlineInput = document.getElementById('cardDeadline') as HTMLInputElement | null;
     const analysisInput = document.getElementById('cardEffortAnalysis') as HTMLInputElement | null;
     const devInput = document.getElementById('cardEffortDev') as HTMLInputElement | null;
@@ -201,7 +209,9 @@ export class UIController {
     if (!valInput) return;
 
     const recalc = () => {
-      const val = parseInt(valInput.value, 10) || 1500;
+      const val = parseInt(valInput.value, 10) || 0;
+      const type = typeSelect ? typeSelect.value : 'story';
+      const isEpic = val > 35000 || type === 'epic';
 
       let deadlineDays = 8;
       let effAnalysis = 2;
@@ -209,7 +219,35 @@ export class UIController {
       let effTest = 2;
       let adviceHtml = '';
 
-      if (val < 2500) {
+      if (isEpic) {
+        if (typeSelect && typeSelect.value !== 'epic') typeSelect.value = 'epic';
+        const numStories = Math.max(3, Math.floor(val / 10000));
+        const numBugs = Math.max(1, Math.floor(val / 18000));
+        deadlineDays = Math.max(14, Math.round(val / 2500));
+        effAnalysis = Math.max(4, Math.round(val / 8000));
+        effDev = Math.max(8, Math.round(val / 3500));
+        effTest = Math.max(4, Math.round(val / 7000));
+
+        adviceHtml = `
+          <div style="font-size:0.78rem; color:#c084fc; font-weight:700;">💎 DEMANDA ÉPICA (Valor superior a R$ 35k)</div>
+          <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+            Esta demanda é classificada como <strong>ÉPICO</strong>! Pela complexidade de R$ ${val.toLocaleString('pt-BR')}, gerará automaticamente <strong>${numStories} Stories e ${numBugs} Bugs vinculados</strong> no Backlog ao longo do fluxo.
+            <br><span style="color:#fbbf24; font-weight:600;">⚠️ Capacidade Fixa:</span> O total de desenvolvedores calculados para o desenvolvimento <strong>não pode ser alterado</strong> (permanece fixo em 3: Lucas, Rafael, Thiago). O squad deve usar o fluxo Kanban para entregar!
+          </div>
+        `;
+      } else if (type === 'docs' || val === 0) {
+        deadlineDays = 6;
+        effAnalysis = 3;
+        effDev = 2;
+        effTest = 2;
+        adviceHtml = `
+          <div style="font-size:0.78rem; color:#f59e0b; font-weight:700;">📄 CRIAÇÃO DE DOCUMENTAÇÃO (Custo Sem Lucro)</div>
+          <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+            Demandas de documentação geram <strong>apenas custo sem lucro</strong> (R$ 0 de faturamento).
+            <br><span style="color:#f87171; font-weight:600;">⚠️ Impacto Financeiro:</span> Quanto mais demorar a entrega de documentos, maior é o custo acumulado (+R$ 180/dia e +R$ 380/dia se atrasar) debitado do caixa ao final!
+          </div>
+        `;
+      } else if (val < 2500) {
         deadlineDays = Math.max(6, 12 - Math.floor(val / 400));
         effAnalysis = 2;
         effDev = Math.max(3, Math.round(val / 500));
@@ -232,16 +270,15 @@ export class UIController {
           </div>
         `;
       } else {
-        deadlineDays = Math.max(2, 4 - Math.floor((val - 4500) / 1500));
+        deadlineDays = Math.max(3, 6 - Math.floor((val - 4500) / 3000));
         effAnalysis = 3;
-        effDev = Math.max(7, Math.round(val / 400));
+        effDev = Math.max(7, Math.round(val / 600));
         effTest = 4;
         adviceHtml = `
-          <div style="font-size:0.75rem; color:#f87171; font-weight:700;">🔴 MEGA PROJETO ESTRATÉGICO / RISCO CRÍTICO</div>
+          <div style="font-size:0.75rem; color:#f87171; font-weight:700;">🔴 PROJETO CRÍTICO DE ALTO RETORNO</div>
           <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px;">
-            Prazo ULTRA curto (<strong>${deadlineDays} dias</strong>) e esforço elevado (${effAnalysis + effDev + effTest} pts).
-            <strong>Exige os 3 especialistas focados</strong> em cada etapa para não estourar o SLA.
-            Gera alto risco (70%) de reprovação nos testes e quebra de regressões no produto!
+            Prazo curto (${deadlineDays} dias) e esforço elevado (${effAnalysis + effDev + effTest} pts).
+            Exige especialistas focados em cada etapa para não estourar o SLA.
           </div>
         `;
       }
@@ -254,28 +291,41 @@ export class UIController {
     };
 
     valInput.addEventListener('input', recalc);
+    if (typeSelect) {
+      typeSelect.addEventListener('change', () => {
+        if (typeSelect.value === 'epic' && parseInt(valInput.value, 10) <= 35000) {
+          valInput.value = '45000';
+        } else if (typeSelect.value === 'story' && parseInt(valInput.value, 10) > 35000) {
+          valInput.value = '3500';
+        }
+        recalc();
+      });
+    }
     recalc();
 
-    (window as any).setCardPreset = (type: string) => {
+    (window as any).setCardPreset = (presetType: string) => {
       const titleInput = document.getElementById('cardTitle') as HTMLInputElement | null;
       const descInput = document.getElementById('cardDesc') as HTMLTextAreaElement | null;
       const classInput = document.getElementById('cardClass') as HTMLSelectElement | null;
 
-      if (type === 'standard') {
-        if (titleInput) titleInput.value = 'Módulo de Notificações Push';
-        if (descInput) descInput.value = 'Envio de alertas em tempo real de promoções no app.';
+      if (presetType === 'standard') {
+        if (titleInput) titleInput.value = 'Otimização do Checkout em 1 Clique';
+        if (descInput) descInput.value = 'Melhoria no fluxo de pagamento aumentando a taxa de conversão do e-commerce.';
         if (classInput) classInput.value = 'standard';
-        valInput.value = '1800';
-      } else if (type === 'high-gain') {
+        if (typeSelect) typeSelect.value = 'story';
+        valInput.value = '2500';
+      } else if (presetType === 'high-gain') {
         if (titleInput) titleInput.value = 'Nova Engine de Inteligência de Crédito';
-        if (descInput) descInput.value = 'Cálculo de risco financeiro com alto valor e prazo rigoroso.';
+        if (descInput) descInput.value = 'Cálculo de risco financeiro com alto valor de retorno e prazo rigoroso.';
         if (classInput) classInput.value = 'fixed-date';
+        if (typeSelect) typeSelect.value = 'story';
         valInput.value = '4500';
-      } else if (type === 'mega-urgent') {
-        if (titleInput) titleInput.value = 'Integração com Sistema ERP Global';
-        if (descInput) descInput.value = 'Contrato estratégico multimilionário com entrega urgente.';
+      } else if (presetType === 'epic') {
+        if (titleInput) titleInput.value = 'Nova Plataforma de Pagamentos Multicanal';
+        if (descInput) descInput.value = 'Grande iniciativa de R$ 45.000 que gera automaticamente múltiplas histórias e bugs correlacionados no Backlog.';
         if (classInput) classInput.value = 'fixed-date';
-        valInput.value = '6500';
+        if (typeSelect) typeSelect.value = 'epic';
+        valInput.value = '45000';
       }
       recalc();
     };
@@ -572,7 +622,7 @@ export class UIController {
    */
   private createCardElement(card: Card): HTMLElement {
     const el = document.createElement('div');
-    el.className = `kanban-card ${card.classOfService} ${card.isBlocked ? 'is-blocked' : ''}`;
+    el.className = `kanban-card ${card.classOfService} ${card.isEpic ? 'is-epic' : ''} ${card.demandType ? 'demand-' + card.demandType : ''} ${card.isBlocked ? 'is-blocked' : ''}`;
     el.draggable = true;
     el.dataset.id = card.id;
 
@@ -582,6 +632,50 @@ export class UIController {
       'standard': '📦 Padrão',
       'tech-debt': '🛠️ Dívida Técnica',
     };
+
+    const typeLabels: Record<string, { label: string; icon: string; css: string }> = {
+      epic: { label: 'Épico Estratégico', icon: '💎', css: 'badge-epic' },
+      bug: { label: 'Bug / Defeito', icon: '🐛', css: 'badge-bug' },
+      support: { label: 'Apoio Suporte', icon: '🎧', css: 'badge-support' },
+      docs: { label: 'Documentação', icon: '📄', css: 'badge-docs' },
+      story: { label: 'Story (Melhoria)', icon: '💡', css: 'badge-story' },
+    };
+    const currentType = card.demandType || (card.isEpic ? 'epic' : 'story');
+    const typeInfo = typeLabels[currentType] || typeLabels.story;
+    const demandBadgeHtml = `<span class="demand-pill ${typeInfo.css}">${typeInfo.icon} ${typeInfo.label}</span>`;
+
+    let epicRelationHtml = '';
+    if (card.parentEpicCode) {
+      epicRelationHtml = `
+        <div class="epic-parent-badge" title="Demanda filha originada pelo Épico ${card.parentEpicCode}: ${card.parentEpicTitle || ''}">
+          <span class="epic-link-icon">🔗</span>
+          <span class="epic-link-text">Vinculada ao Épico <strong>[${card.parentEpicCode}]</strong></span>
+        </div>
+      `;
+    }
+
+    let epicProgressHtml = '';
+    if (card.isEpic) {
+      const childStories = this.engine.cards.filter(c => c.parentEpicId === card.id && c.demandType === 'story');
+      const childBugs = this.engine.cards.filter(c => c.parentEpicId === card.id && c.demandType === 'bug');
+      const childDelivered = childStories.filter(c => c.column === 'deployed').length;
+      const totalStories = Math.max(card.epicTotalStories || 0, childStories.length);
+      const totalBugs = Math.max(card.epicTotalBugs || 0, childBugs.length);
+      const pct = totalStories > 0 ? Math.round((childDelivered / totalStories) * 100) : 0;
+
+      epicProgressHtml = `
+        <div class="epic-progress-box">
+          <div class="epic-progress-header">
+            <span>⚡ Decomposição do Épico no Backlog:</span>
+            <span class="epic-progress-stat">${childDelivered}/${totalStories} Stories • ${totalBugs} Bugs</span>
+          </div>
+          <div class="epic-progress-bar-wrap" title="${pct}% das histórias concluídas">
+            <div class="epic-progress-bar-fill" style="width: ${pct}%"></div>
+          </div>
+          <div class="epic-capacity-note">👥 Squad com 3 Devs fixos calculados</div>
+        </div>
+      `;
+    }
 
     let deadlineClass = 'ontime';
     let deadlineText = '';
@@ -599,15 +693,28 @@ export class UIController {
       }
     } else {
       const daysLeft = card.deadlineDay - this.engine.day;
-      if (daysLeft > 0) {
-        deadlineClass = 'ontime';
-        deadlineText = `Prazo: D${card.deadlineDay} (${daysLeft}d restantes)`;
-      } else if (daysLeft === 0) {
-        deadlineClass = 'warning';
-        deadlineText = `Prazo: HOJE! (D${card.deadlineDay})`;
+      if (card.demandType === 'docs') {
+        if (daysLeft > 0) {
+          deadlineClass = 'ontime';
+          deadlineText = `Prazo: D${card.deadlineDay} (${daysLeft}d restantes)`;
+        } else if (daysLeft === 0) {
+          deadlineClass = 'warning';
+          deadlineText = `Prazo Documentação: HOJE!`;
+        } else {
+          deadlineClass = 'delayed';
+          deadlineText = `⚠️ Atraso encarecendo entrega (+R$ 380/d)!`;
+        }
       } else {
-        deadlineClass = 'delayed';
-        deadlineText = `⚠️ Atrasado há ${Math.abs(daysLeft)}d!`;
+        if (daysLeft > 0) {
+          deadlineClass = 'ontime';
+          deadlineText = `Prazo: D${card.deadlineDay} (${daysLeft}d restantes)`;
+        } else if (daysLeft === 0) {
+          deadlineClass = 'warning';
+          deadlineText = `Prazo: HOJE! (D${card.deadlineDay})`;
+        } else {
+          deadlineClass = 'delayed';
+          deadlineText = `⚠️ Atrasado há ${Math.abs(daysLeft)}d!`;
+        }
       }
     }
 
@@ -703,17 +810,41 @@ export class UIController {
       `;
     }
 
+    let valueFooterHtml = '';
+    if (card.demandType === 'docs') {
+      const isOverdue = card.column !== 'deployed' && this.engine.day > card.deadlineDay;
+      const rate = isOverdue ? 380 : 180;
+      const accCost = card.accumulatedDocCost || 400;
+      valueFooterHtml = `
+        <div class="card-value-display docs-value-box">
+          <span class="card-value-docs-zero" title="Documentação gera apenas custo sem lucro">R$ 0 (Lucro)</span>
+          <span class="card-value-docs-cost" title="Custo acumulado deduzido na entrega">💸 Custo: R$ ${accCost.toLocaleString('pt-BR')} ${card.column !== 'deployed' ? `(+R$ ${rate}/d)` : ''}</span>
+        </div>
+      `;
+    } else {
+      valueFooterHtml = `
+        <div class="card-value-display">
+          <span class="card-value-current">R$ ${card.currentValue.toLocaleString('pt-BR')}</span>
+          ${card.accumulatedPenalty > 0 ? `<span class="card-value-original">R$ ${card.baseValue.toLocaleString('pt-BR')}</span>` : ''}
+        </div>
+      `;
+    }
+
     el.innerHTML = `
       <div class="card-header-line">
         <div class="card-id-class">
           <span class="card-id">${card.code}</span>
           <span class="class-indicator ${card.classOfService}">${classLabels[card.classOfService] || card.classOfService}</span>
         </div>
+        ${demandBadgeHtml}
       </div>
+
+      ${epicRelationHtml}
 
       <div class="card-title">${card.title}</div>
       <div class="card-desc">${card.description}</div>
 
+      ${epicProgressHtml}
       ${readyBadge}
       ${blockedBadge}
       ${bugBanner}
@@ -748,15 +879,12 @@ export class UIController {
       <!-- Deadline & Penalty -->
       <div class="card-deadline-box">
         <span class="deadline-text ${deadlineClass}">${deadlineText}</span>
-        ${card.accumulatedPenalty > 0 ? `<span class="penalty-tag">-R$ ${card.accumulatedPenalty}</span>` : ''}
+        ${card.accumulatedPenalty > 0 && card.demandType !== 'docs' ? `<span class="penalty-tag">-R$ ${card.accumulatedPenalty}</span>` : ''}
       </div>
 
       <!-- Footer: Current Value & Delivery -->
       <div class="card-footer">
-        <div class="card-value-display">
-          <span class="card-value-current">R$ ${card.currentValue.toLocaleString('pt-BR')}</span>
-          ${card.accumulatedPenalty > 0 ? `<span class="card-value-original">R$ ${card.baseValue}</span>` : ''}
-        </div>
+        ${valueFooterHtml}
         ${card.column !== 'deployed' ? `<span style="font-size:0.68rem; color:#94a3b8;">Arraste para mover</span>` : `<span style="font-size:0.68rem; color:#34d399;">✅ Entregue D${card.completedDay}</span>`}
       </div>
     `;

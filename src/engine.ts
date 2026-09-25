@@ -14,7 +14,8 @@ import type {
   EventLog,
   GameExportData,
   GameOverReason,
-  GameScore
+  GameScore,
+  DemandType
 } from './types';
 import { SQUAD_EVENTS } from './events';
 import { soundEngine } from './audio';
@@ -33,6 +34,7 @@ export class KanbanGameEngine {
   public isGameOver: boolean = false;
   public gameOverReason: GameOverReason = null;
   public finalScore: GameScore | null = null;
+  public lastDemandGeneratedDay: number = 1;
 
   constructor() {
     this.wipLimits = {
@@ -212,6 +214,7 @@ export class KanbanGameEngine {
       history: [],
     };
 
+    this.lastDemandGeneratedDay = 1;
     this.cfdHistory = [];
     this.dailyDelivered = [];
     this.eventsHistory = [];
@@ -229,6 +232,7 @@ export class KanbanGameEngine {
         title: 'Módulo de Pagamento Pix',
         description: 'Implementação de QR Code dinâmico e webhook síncrono do Bacen.',
         classOfService: 'fixed-date',
+        demandType: 'story',
         column: 'development',
         createdDay: 1,
         startedDay: 1,
@@ -257,6 +261,7 @@ export class KanbanGameEngine {
         title: 'Autenticação 2FA (TOTP)',
         description: 'Segurança de acesso via aplicativo autenticador do usuário.',
         classOfService: 'standard',
+        demandType: 'story',
         column: 'analysis',
         createdDay: 1,
         startedDay: 1,
@@ -285,6 +290,7 @@ export class KanbanGameEngine {
         title: 'Refatoração da Camada de Cache',
         description: 'Migração de cache local para Redis Cluster de alta disponibilidade.',
         classOfService: 'tech-debt',
+        demandType: 'story',
         column: 'ready',
         createdDay: 1,
         startedDay: 1,
@@ -313,6 +319,7 @@ export class KanbanGameEngine {
         title: 'Dashboard Operacional em Tempo Real',
         description: 'Métricas gerenciais com WebSockets para diretoria de operações.',
         classOfService: 'standard',
+        demandType: 'story',
         column: 'ready',
         createdDay: 1,
         startedDay: 1,
@@ -338,21 +345,22 @@ export class KanbanGameEngine {
       {
         id: 'crd-105',
         code: 'CRD-105',
-        title: 'Exportação Contábil SPED',
-        description: 'Relatório fiscal em arquivo texto compatível com validador da Receita.',
+        title: 'Documentação: Manual Regulatório & SPED Fiscal',
+        description: 'Elaboração documental obrigatória. Não gera faturamento (Lucro R$ 0); atrasos aumentam os custos de conformidade.',
         classOfService: 'standard',
+        demandType: 'docs',
         column: 'backlog',
         createdDay: 1,
         startedDay: null,
         completedDay: null,
-        deadlineDay: 12,
-        baseValue: 1600,
-        currentValue: 1600,
-        penaltyPerDay: 200,
+        deadlineDay: 10,
+        baseValue: 0,
+        currentValue: 0,
+        penaltyPerDay: 0,
         accumulatedPenalty: 0,
-        effortAnalysis: 2,
+        effortAnalysis: 3,
         doneAnalysis: 0,
-        effortDev: 4,
+        effortDev: 3,
         doneDev: 0,
         effortTest: 2,
         doneTest: 0,
@@ -362,6 +370,8 @@ export class KanbanGameEngine {
         isManual: false,
         isHighValue: false,
         bugRejectionCount: 0,
+        accumulatedDocCost: 400,
+        docCostPerDay: 180,
       },
       {
         id: 'crd-106',
@@ -369,6 +379,7 @@ export class KanbanGameEngine {
         title: 'Adequação LGPD - Opt-out',
         description: 'Painel de consentimento e anonimização de dados do titular.',
         classOfService: 'fixed-date',
+        demandType: 'story',
         column: 'backlog',
         createdDay: 1,
         startedDay: null,
@@ -385,6 +396,64 @@ export class KanbanGameEngine {
         effortTest: 3,
         doneTest: 0,
         totalEffort: 10,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: false,
+        bugRejectionCount: 0,
+      },
+      {
+        id: 'crd-107',
+        code: 'CRD-107',
+        title: 'Apoio ao Suporte: Investigação de Chamado VIP',
+        description: 'Suporte técnico a cliente corporativo com instabilidade no extrato financeiro.',
+        classOfService: 'standard',
+        demandType: 'support',
+        column: 'backlog',
+        createdDay: 1,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: 8,
+        baseValue: 1500,
+        currentValue: 1500,
+        penaltyPerDay: 200,
+        accumulatedPenalty: 0,
+        effortAnalysis: 2,
+        doneAnalysis: 0,
+        effortDev: 3,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 7,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: false,
+        bugRejectionCount: 0,
+      },
+      {
+        id: 'bug-108',
+        code: 'BUG-108',
+        title: 'Bug: Falha na Conciliação de Boletos',
+        description: 'Retorno bancário não identificando baixas de títulos pagos após as 18h.',
+        classOfService: 'expedite',
+        demandType: 'bug',
+        column: 'backlog',
+        createdDay: 1,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: 4,
+        baseValue: 1600,
+        currentValue: 1600,
+        penaltyPerDay: 350,
+        accumulatedPenalty: 0,
+        effortAnalysis: 1,
+        doneAnalysis: 0,
+        effortDev: 3,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 6,
         isBlocked: false,
         assignedAgents: [],
         isManual: false,
@@ -508,8 +577,16 @@ export class KanbanGameEngine {
 
     if (targetColumn === 'deployed' && !card.completedDay) {
       card.completedDay = this.day;
-      const earned = Math.max(0, card.currentValue);
-      this.financial.totalRevenue += earned;
+      let earned = Math.max(0, card.currentValue);
+
+      if (card.demandType === 'docs') {
+        earned = 0; // Documentação gera apenas custo sem lucro
+        const docCost = card.accumulatedDocCost || 400;
+        this.financial.totalCost += docCost;
+      } else {
+        this.financial.totalRevenue += earned;
+      }
+
       this.financial.netProfit = this.financial.totalRevenue - this.financial.totalCost - this.financial.totalPenalties + (this.financial.bonusEarned || 0);
       this.financial.currentCash = this.financial.initialCash + this.financial.netProfit;
       if (this.financial.currentCash >= 0) {
@@ -551,40 +628,380 @@ export class KanbanGameEngine {
   }
 
   public addCard(cardData: any): Card {
-    const baseVal = parseInt(cardData.baseValue, 10) || 1500;
-    const isHigh = baseVal >= 3000;
+    const rawVal = parseInt(cardData.baseValue, 10);
+    let baseVal = isNaN(rawVal) ? 1500 : rawVal;
 
+    // Regra: Demanda custando mais de 35k é considerada EPIC
+    const isEpic = baseVal > 35000 || cardData.demandType === 'epic';
+    let demandType: DemandType = cardData.demandType || (isEpic ? 'epic' : 'story');
+    if (baseVal > 35000) {
+      demandType = 'epic';
+    }
+
+    let isHigh = baseVal >= 3000;
+    if (isEpic) isHigh = true;
+
+    let effAnalysis = parseInt(cardData.effortAnalysis, 10) || 2;
+    let effDev = parseInt(cardData.effortDev, 10) || 4;
+    let effTest = parseInt(cardData.effortTest, 10) || 2;
+    let deadlineDays = parseInt(cardData.deadlineDays, 10) || 7;
+
+    let accumulatedDocCost = 0;
+    let docCostPerDay = 0;
+
+    let epicTotalStories = 0;
+    let epicTotalBugs = 0;
+
+    if (demandType === 'docs') {
+      // Documentação não gera lucro (apenas custo)
+      baseVal = 0;
+      accumulatedDocCost = 400;
+      docCostPerDay = 180;
+    } else if (isEpic) {
+      // Épico: O total de desenvolvedores calculados permanece rigorosamente inalterado (3 devs)
+      effAnalysis = Math.max(effAnalysis, 4);
+      effDev = Math.max(effDev, 8);
+      effTest = Math.max(effTest, 4);
+      deadlineDays = Math.max(deadlineDays, 14);
+
+      // Quanto maior o valor do epic, maior o número de bugs e stories geradas no backlog
+      epicTotalStories = Math.max(3, Math.floor(baseVal / 10000));
+      epicTotalBugs = Math.max(1, Math.floor(baseVal / 18000));
+    }
+
+    const codePrefix = isEpic ? 'EPIC-' : 'CRD-';
     const newCard: Card = {
-      id: 'crd-' + (Date.now() % 100000),
-      code: 'CRD-' + (100 + this.cards.length + 1),
-      title: cardData.title || 'Nova Demanda',
-      description: cardData.description || 'Descrição da funcionalidade.',
-      classOfService: cardData.classOfService || 'standard',
+      id: (isEpic ? 'epic-' : 'crd-') + (Date.now() % 1000000),
+      code: codePrefix + (100 + this.cards.length + 1),
+      title: cardData.title || (isEpic ? 'Novo Épico Estratégico' : 'Nova Demanda'),
+      description: cardData.description || (isEpic ? 'Demanda de grande porte que decompõe em histórias e bugs relacionados.' : 'Descrição da funcionalidade.'),
+      classOfService: cardData.classOfService || (isEpic ? 'fixed-date' : 'standard'),
+      demandType,
       column: 'backlog',
       createdDay: this.day,
       startedDay: null,
       completedDay: null,
-      deadlineDay: this.day + (parseInt(cardData.deadlineDays, 10) || 7),
-      baseValue: baseVal,
-      currentValue: baseVal,
-      penaltyPerDay: parseInt(cardData.penaltyPerDay, 10) || Math.round(baseVal * 0.15),
+      deadlineDay: this.day + deadlineDays,
+      baseValue: demandType === 'docs' ? 0 : baseVal,
+      currentValue: demandType === 'docs' ? 0 : baseVal,
+      penaltyPerDay: demandType === 'docs' ? 0 : (parseInt(cardData.penaltyPerDay, 10) || Math.round(baseVal * 0.15)),
       accumulatedPenalty: 0,
-      effortAnalysis: parseInt(cardData.effortAnalysis, 10) || 2,
+      effortAnalysis: effAnalysis,
       doneAnalysis: 0,
-      effortDev: parseInt(cardData.effortDev, 10) || 4,
+      effortDev: effDev,
       doneDev: 0,
-      effortTest: parseInt(cardData.effortTest, 10) || 2,
+      effortTest: effTest,
       doneTest: 0,
-      totalEffort: (parseInt(cardData.effortAnalysis, 10) || 2) + (parseInt(cardData.effortDev, 10) || 4) + (parseInt(cardData.effortTest, 10) || 2),
+      totalEffort: effAnalysis + effDev + effTest,
       isBlocked: false,
       assignedAgents: [],
       isManual: true,
       isHighValue: isHigh,
       bugRejectionCount: 0,
+      isEpic,
+      accumulatedDocCost,
+      docCostPerDay,
+      epicTotalStories,
+      epicTotalBugs,
+      epicSpawnedStories: 0,
+      epicSpawnedBugs: 0,
     };
 
     this.cards.push(newCard);
+
+    // Se for Épico, gera imediatamente o primeiro lote de stories e bug vinculados no backlog
+    if (isEpic) {
+      this.spawnEpicChildDemand(newCard, 'story');
+      this.spawnEpicChildDemand(newCard, 'story');
+      if (epicTotalBugs > 0) {
+        this.spawnEpicChildDemand(newCard, 'bug');
+      }
+
+      const epicNotice: EventLog = {
+        day: this.day,
+        title: `💎 NOVO ÉPICO CRIADO: [${newCard.code}]`,
+        badge: 'Épico Estratégico',
+        type: 'positive',
+        description: `Demanda de grande porte "${newCard.title}" (R$ ${baseVal.toLocaleString('pt-BR')}) iniciada no Backlog!`,
+        impactText: `Por ser um Épico, foram planejadas ${epicTotalStories} Stories e ${epicTotalBugs} Bugs relacionados que entrarão no Backlog ao longo do fluxo. O squad mantém rigorosamente os 3 Desenvolvedores calculados!`,
+        customResult: `As primeiras histórias e bugs vinculados ao [${newCard.code}] já surgiram no Backlog!`,
+      };
+      this.eventsHistory.unshift(epicNotice);
+      this.lastEvent = epicNotice;
+    }
+
     return newCard;
+  }
+
+  public spawnEpicChildDemand(epic: Card, type: 'story' | 'bug'): Card | null {
+    if (type === 'story') {
+      epic.epicSpawnedStories = (epic.epicSpawnedStories || 0) + 1;
+      const storyIdx = epic.epicSpawnedStories;
+      const storyTitles = [
+        `Arquitetura & Especificação do Módulo`,
+        `Desenvolvimento do Core & APIs`,
+        `Integração de Mensageria & Eventos`,
+        `Interface de Usuário & Experiência`,
+        `Segurança, Auditoria & Permissões`,
+        `Cache Distribuído & Escalabilidade`,
+        `Relatórios & Painel Administrativo`,
+        `Mecanismos de Sincronização Síncrona`,
+        `Webhooks & Integrações Externas`,
+        `Homologação Final & Documentação Técnica`,
+      ];
+      const titleSuffix = storyTitles[(storyIdx - 1) % storyTitles.length];
+      const subValue = Math.round(epic.baseValue / Math.max(1, (epic.epicTotalStories || 4)));
+
+      const storyCard: Card = {
+        id: 'crd-' + (Date.now() % 1000000) + '-' + Math.floor(Math.random() * 1000),
+        code: 'CRD-' + (100 + this.cards.length + 1),
+        title: `[Story • ${epic.code}] ${titleSuffix}`,
+        description: `História #${storyIdx} relacionada ao Épico [${epic.code}] "${epic.title}". Entrega funcional imprescindível para o valor do projeto.`,
+        classOfService: 'standard',
+        demandType: 'story',
+        column: 'backlog',
+        createdDay: this.day,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: this.day + 7 + storyIdx,
+        baseValue: subValue,
+        currentValue: subValue,
+        penaltyPerDay: Math.round(subValue * 0.15),
+        accumulatedPenalty: 0,
+        effortAnalysis: 2,
+        doneAnalysis: 0,
+        effortDev: 4,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 8,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: false,
+        bugRejectionCount: 0,
+        parentEpicId: epic.id,
+        parentEpicCode: epic.code,
+        parentEpicTitle: epic.title,
+      };
+
+      this.cards.push(storyCard);
+      return storyCard;
+    } else {
+      epic.epicSpawnedBugs = (epic.epicSpawnedBugs || 0) + 1;
+      const bugIdx = epic.epicSpawnedBugs;
+      const bugTitles = [
+        `Inconsistência de Schema no Epic`,
+        `Timeout de Integração com Serviços`,
+        `Falha de Validação de Dados Críticos`,
+        `Conflito de Concorrência em Transações`,
+        `Erro de Serialização JSON no Gateway`,
+      ];
+      const bugTitle = bugTitles[(bugIdx - 1) % bugTitles.length];
+      const bugVal = 1600;
+
+      const bugCard: Card = {
+        id: 'bug-' + (Date.now() % 1000000) + '-' + Math.floor(Math.random() * 1000),
+        code: 'BUG-' + (100 + this.cards.length + 1),
+        title: `[Bug • ${epic.code}] ${bugTitle}`,
+        description: `Defeito decorrente da alta complexidade do Épico [${epic.code}] "${epic.title}". Requer correção pelos desenvolvedores do squad.`,
+        classOfService: 'expedite',
+        demandType: 'bug',
+        column: 'backlog',
+        createdDay: this.day,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: this.day + 3,
+        baseValue: bugVal,
+        currentValue: bugVal,
+        penaltyPerDay: 400,
+        accumulatedPenalty: 0,
+        effortAnalysis: 1,
+        doneAnalysis: 0,
+        effortDev: 3,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 6,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: false,
+        bugRejectionCount: 0,
+        parentEpicId: epic.id,
+        parentEpicCode: epic.code,
+        parentEpicTitle: epic.title,
+      };
+
+      this.cards.push(bugCard);
+      return bugCard;
+    }
+  }
+
+  public spawnRandomBacklogDemand(): Card {
+    const types: ('bug' | 'support' | 'docs' | 'story')[] = ['bug', 'support', 'docs', 'story'];
+    const chosenType = types[Math.floor(Math.random() * types.length)];
+    const cardNum = 100 + this.cards.length + 1;
+    let card: Card;
+
+    if (chosenType === 'bug') {
+      const bugOptions = [
+        { title: 'Falha na Validação de Pagamento Pix', desc: 'Usuários relatam intermitência no webhook de confirmação do Bacen.' },
+        { title: 'Crash no Checkout em Dispositivos Android', desc: 'Exceção não tratada ao tentar calcular frete para múltiplos itens.' },
+        { title: 'Inconsistência no Cálculo de Alíquotas de ICMS', desc: 'Divergência de centavos nas notas fiscais emitidas para o Sudeste.' },
+        { title: 'Memory Leak no Processamento de Fila SQS', desc: 'Consumo elevado de RAM nos nós de background durante o pico.' },
+      ];
+      const opt = bugOptions[Math.floor(Math.random() * bugOptions.length)];
+      const val = 1500 + Math.floor(Math.random() * 8) * 100;
+      card = {
+        id: 'bug-' + Date.now().toString(36),
+        code: 'BUG-' + cardNum,
+        title: `🐛 ${opt.title}`,
+        description: opt.desc,
+        classOfService: Math.random() < 0.5 ? 'expedite' : 'standard',
+        demandType: 'bug',
+        column: 'backlog',
+        createdDay: this.day,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: this.day + 4,
+        baseValue: val,
+        currentValue: val,
+        penaltyPerDay: 300,
+        accumulatedPenalty: 0,
+        effortAnalysis: 1,
+        doneAnalysis: 0,
+        effortDev: 3,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 6,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: false,
+        bugRejectionCount: 0,
+      };
+    } else if (chosenType === 'support') {
+      const supportOptions = [
+        { title: 'Apoio ao Suporte: Investigação de Acesso VIP', desc: 'Cliente corporativo com bloqueio intermitente de permissões no portal.' },
+        { title: 'Apoio ao Cliente: Conciliação de Extratos Enterprise', desc: 'Geração emergencial de script contábil para encerramento de mês.' },
+        { title: 'Apoio ao Atendimento: Diagnóstico de Latência no App', desc: 'Equipe de suporte solicita apoio técnico para mapear lentidão em chamados.' },
+        { title: 'Apoio N3: Recuperação de Lote de Transações Pendentes', desc: 'Sincronização manual com parceiro para desbloquear pedidos de clientes.' },
+      ];
+      const opt = supportOptions[Math.floor(Math.random() * supportOptions.length)];
+      const val = 1400 + Math.floor(Math.random() * 7) * 100;
+      card = {
+        id: 'sup-' + Date.now().toString(36),
+        code: 'SUP-' + cardNum,
+        title: `🎧 ${opt.title}`,
+        description: opt.desc,
+        classOfService: 'standard',
+        demandType: 'support',
+        column: 'backlog',
+        createdDay: this.day,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: this.day + 5,
+        baseValue: val,
+        currentValue: val,
+        penaltyPerDay: 200,
+        accumulatedPenalty: 0,
+        effortAnalysis: 2,
+        doneAnalysis: 0,
+        effortDev: 3,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 7,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: false,
+        bugRejectionCount: 0,
+      };
+    } else if (chosenType === 'docs') {
+      const docOptions = [
+        { title: 'Documentação: Manual de Auditoria & Conformidade Fiscal', desc: 'Atualização mandatória para fiscalização regulatória. Demanda gera custo sem receita; quanto mais atrasar, maiores as multas.' },
+        { title: 'Documentação: Dicionário de Dados e Políticas LGPD', desc: 'Mapeamento formal de ciclo de vida de dados sensíveis para o time jurídico. Custo operacional contínuo até conclusão.' },
+        { title: 'Documentação: Especificação de Arquitetura & APIs Públicas', desc: 'Contrato de integração para parceiros do ecossistema. Sem retorno financeiro direto; atrasos elevam o custo de consultoria.' },
+        { title: 'Documentação: Guia de Procedimentos Operacionais e SLA', desc: 'Formalização de normas de compliance para clientes corporativos. Gera custo de elaboração sem faturamento.' },
+      ];
+      const opt = docOptions[Math.floor(Math.random() * docOptions.length)];
+      card = {
+        id: 'doc-' + Date.now().toString(36),
+        code: 'DOC-' + cardNum,
+        title: `📄 ${opt.title}`,
+        description: opt.desc,
+        classOfService: 'standard',
+        demandType: 'docs',
+        column: 'backlog',
+        createdDay: this.day,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: this.day + 6,
+        baseValue: 0,
+        currentValue: 0,
+        penaltyPerDay: 0,
+        accumulatedPenalty: 0,
+        effortAnalysis: 3,
+        doneAnalysis: 0,
+        effortDev: 2,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 7,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: false,
+        bugRejectionCount: 0,
+        accumulatedDocCost: 400,
+        docCostPerDay: 180,
+      };
+    } else {
+      // story
+      const storyOptions = [
+        { title: 'Story: Novo Filtro Dinâmico no Catálogo de Produtos', desc: 'Melhoria de usabilidade para acelerar a busca de produtos pelos clientes.' },
+        { title: 'Story: Notificações em Tempo Real com WebSockets', desc: 'Envio imediato de alertas de status de transação para os usuários.' },
+        { title: 'Story: Otimização do Fluxo de Pagamento em 1-Clique', desc: 'Redução de fricção no carrinho de compras aumentando a taxa de conversão.' },
+        { title: 'Story: Dashboard Personalizado para Administradores', desc: 'Visualização de métricas customizadas por departamento no portal web.' },
+      ];
+      const opt = storyOptions[Math.floor(Math.random() * storyOptions.length)];
+      const val = 2000 + Math.floor(Math.random() * 8) * 150;
+      card = {
+        id: 'crd-' + Date.now().toString(36),
+        code: 'CRD-' + cardNum,
+        title: `💡 ${opt.title}`,
+        description: opt.desc,
+        classOfService: 'standard',
+        demandType: 'story',
+        column: 'backlog',
+        createdDay: this.day,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: this.day + 7,
+        baseValue: val,
+        currentValue: val,
+        penaltyPerDay: Math.round(val * 0.15),
+        accumulatedPenalty: 0,
+        effortAnalysis: 2,
+        doneAnalysis: 0,
+        effortDev: 4,
+        doneDev: 0,
+        effortTest: 2,
+        doneTest: 0,
+        totalEffort: 8,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: val >= 3000,
+        bugRejectionCount: 0,
+      };
+    }
+
+    this.cards.push(card);
+    return card;
   }
 
   public spawnRegressionBug(sourceCard: Card): void {
@@ -717,6 +1134,60 @@ export class KanbanGameEngine {
       }
     }
 
+    // 2.1 Atualização de Custo das Demandas de Documentação (apenas geram custo sem lucro, aumentando conforme atrasam)
+    this.cards.forEach(card => {
+      if (card.demandType === 'docs' && card.column !== 'deployed') {
+        const isDelayed = this.day > card.deadlineDay;
+        const dailyRate = isDelayed ? 380 : 180;
+        card.accumulatedDocCost = (card.accumulatedDocCost || 400) + dailyRate;
+      }
+    });
+
+    // 2.2 Novas Demandas Automáticas no Backlog (no mínimo 1 a cada 2 dias)
+    const daysSinceLastDemand = this.day - this.lastDemandGeneratedDay;
+    if (daysSinceLastDemand >= 2 || (this.day > 1 && Math.random() < 0.65)) {
+      const newDemand = this.spawnRandomBacklogDemand();
+      this.lastDemandGeneratedDay = this.day;
+
+      const typeLabels: Record<string, string> = {
+        bug: '🐛 Correção de Bug',
+        support: '🎧 Apoio ao Suporte/Cliente',
+        docs: '📄 Criação de Documentação',
+        story: '💡 Story (Melhoria)',
+      };
+      const label = typeLabels[newDemand.demandType || 'story'] || 'Demanda';
+
+      if (!this.lastEvent || this.lastEvent.type === 'positive') {
+        const backlogNotice: EventLog = {
+          day: this.day,
+          title: `📥 Nova Demanda no Backlog: [${newDemand.code}]`,
+          badge: label,
+          type: 'neutral',
+          description: `Uma nova demanda do tipo "${label}" chegou ao Backlog: "${newDemand.title}".`,
+          impactText: newDemand.demandType === 'docs'
+            ? 'Atenção: Documentação gera apenas custo sem lucro! Quanto mais demorar a entrega, maior o custo ao final.'
+            : `Valor estimado: R$ ${newDemand.baseValue.toLocaleString('pt-BR')} (Prazo: D${newDemand.deadlineDay}).`,
+          customResult: 'Gerencie o fluxo e respeite os limites de WIP do squad.',
+        };
+        this.eventsHistory.unshift(backlogNotice);
+        if (!this.lastEvent) this.lastEvent = backlogNotice;
+      }
+    }
+
+    // 2.3 Progressão de Demandas de Épicos (Stories e Bugs gerados automaticamente ao longo do fluxo)
+    const activeEpics = this.cards.filter(c => c.isEpic && c.column !== 'deployed');
+    activeEpics.forEach(epic => {
+      const hasPendingStories = (epic.epicSpawnedStories || 0) < (epic.epicTotalStories || 0);
+      const hasPendingBugs = (epic.epicSpawnedBugs || 0) < (epic.epicTotalBugs || 0);
+
+      if (hasPendingStories && Math.random() < 0.70) {
+        this.spawnEpicChildDemand(epic, 'story');
+      }
+      if (hasPendingBugs && Math.random() < 0.50) {
+        this.spawnEpicChildDemand(epic, 'bug');
+      }
+    });
+
     // 3. STRICT SPECIALIST WORK EFFORT APPLICATION
     // STEP A: Apply effort from ASSIGNED agents
     Object.values(this.agents).forEach(agent => {
@@ -835,7 +1306,7 @@ export class KanbanGameEngine {
 
     // 6. Check Deadlines & Penalties
     this.cards.forEach(card => {
-      if (card.column !== 'backlog' && card.column !== 'deployed') {
+      if (card.column !== 'backlog' && card.column !== 'deployed' && card.demandType !== 'docs') {
         if (this.day > card.deadlineDay) {
           const daysOverdue = this.day - card.deadlineDay;
           let penaltyToday = 0;
