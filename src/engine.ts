@@ -39,17 +39,17 @@ export class KanbanGameEngine {
   constructor() {
     this.wipLimits = {
       backlog: 999,
-      ready: 3,
-      analysis: 2,
-      development: 3,
-      testing: 2,
+      ready: 10,
+      analysis: 10,
+      development: 10,
+      testing: 10,
       deployed: 999,
     };
 
     this.agents = this.createSquadMembers();
     this.financial = {
-      initialCash: 1000000,
-      currentCash: 1000000,
+      initialCash: 10000,
+      currentCash: 10000,
       totalRevenue: 0,
       totalCost: 0,
       totalPenalties: 0,
@@ -191,18 +191,18 @@ export class KanbanGameEngine {
 
     this.wipLimits = {
       backlog: 999,
-      ready: 3,
-      analysis: 2,
-      development: 3,
-      testing: 2,
+      ready: 10,
+      analysis: 10,
+      development: 10,
+      testing: 10,
       deployed: 999,
     };
 
     this.agents = this.createSquadMembers();
 
     this.financial = {
-      initialCash: 1000000,
-      currentCash: 1000000,
+      initialCash: 10000,
+      currentCash: 10000,
       totalRevenue: 0,
       totalCost: 0,
       totalPenalties: 0,
@@ -516,9 +516,11 @@ export class KanbanGameEngine {
     return { success: true };
   }
 
-  public canMoveTo(column: string): boolean {
+  public canMoveTo(column: string, cardBeingMoved?: Card): boolean {
     if (column === 'backlog' || column === 'deployed') return true;
-    const currentCount = this.cards.filter(c => c.column === column).length;
+    // O Épico não deve contar nem somar no WIP com os outros cards (apenas stories e bugs vinculados contam)
+    if (cardBeingMoved && cardBeingMoved.isEpic) return true;
+    const currentCount = this.cards.filter(c => c.column === column && !c.isEpic).length;
     const limit = (this.wipLimits as any)[column] || 999;
     return currentCount < limit;
   }
@@ -565,12 +567,13 @@ export class KanbanGameEngine {
     };
 
     const isExpedite = card.classOfService === 'expedite';
-    if (!this.canMoveTo(target) && !isExpedite) {
+    const isEpic = !!card.isEpic;
+    if (!isEpic && !isExpedite && !this.canMoveTo(target, card)) {
       const limit = (this.wipLimits as any)[target] || 999;
       const targetLabel = colDisplayNames[target] || target.toUpperCase();
       return {
         success: false,
-        message: `Limite de WIP da coluna "${targetLabel}" atingido! Respeite o fluxo (Máx: ${limit}).`,
+        message: `Limite de WIP da coluna "${targetLabel}" atingido! Respeite o fluxo (Máx: ${limit} itens).`,
       };
     }
 
@@ -594,6 +597,20 @@ export class KanbanGameEngine {
             success: false,
             message: `Demanda incompleta! Para ir para Conclusão, cumpra o fluxo: Desenv. Ativo (${card.doneAnalysis}/${card.effortAnalysis}), Revisão (${card.doneDev}/${card.effortDev}) e Validação (${card.doneTest}/${card.effortTest}).`,
           };
+        }
+
+        // Regra do Épico: Só pode ser concluído após TODAS as histórias vinculadas a ele também serem concluídas
+        if (card.isEpic) {
+          const linkedItems = this.cards.filter(c => c.parentEpicId === card.id);
+          const pendingItems = linkedItems.filter(c => c.column !== 'deployed');
+          if (pendingItems.length > 0) {
+            const pendingStories = pendingItems.filter(c => c.demandType === 'story').length;
+            const pendingBugs = pendingItems.filter(c => c.demandType === 'bug').length;
+            return {
+              success: false,
+              message: `O Épico [${card.code}] só pode ser marcado como Concluído depois que TODAS as histórias e bugs vinculados a ele também forem concluídos! (Restam ${pendingStories} Stories e ${pendingBugs} Bugs pendentes no fluxo).`,
+            };
+          }
         }
       }
 
@@ -1113,6 +1130,53 @@ export class KanbanGameEngine {
     soundEngine.playWarning();
   }
 
+  public spawnBugFromActiveDev(sourceCard: Card): Card {
+    const cardNum = 100 + this.cards.length + 1;
+    const bugTitles = [
+      `Regressão identificada em ${sourceCard.code}`,
+      `Falha de integração detectada em ${sourceCard.code}`,
+      `Exceção não tratada na lógica de ${sourceCard.code}`,
+      `Inconsistência de validação originada em ${sourceCard.code}`,
+      `Defeito de concorrência disparado por ${sourceCard.code}`,
+    ];
+    const optTitle = bugTitles[Math.floor(Math.random() * bugTitles.length)];
+    const val = 1600 + Math.floor(Math.random() * 6) * 100;
+    const bugCard: Card = {
+      id: 'bug-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000),
+      code: 'BUG-' + cardNum,
+      title: `🐛 ${optTitle}`,
+      description: `Defeito identificado durante o Desenvolvimento Ativo do item [${sourceCard.code} - ${sourceCard.title}]. Requer correção pelo time.`,
+      classOfService: Math.random() < 0.35 ? 'expedite' : 'standard',
+      demandType: 'bug',
+      column: 'backlog',
+      createdDay: this.day,
+      startedDay: null,
+      completedDay: null,
+      deadlineDay: this.day + 4,
+      baseValue: val,
+      currentValue: val,
+      penaltyPerDay: 300,
+      accumulatedPenalty: 0,
+      effortAnalysis: 1,
+      doneAnalysis: 0,
+      effortDev: 3,
+      doneDev: 0,
+      effortTest: 2,
+      doneTest: 0,
+      totalEffort: 6,
+      isBlocked: false,
+      assignedAgents: [],
+      isManual: false,
+      isHighValue: false,
+      bugRejectionCount: 0,
+      parentEpicId: sourceCard.isEpic ? sourceCard.id : (sourceCard.parentEpicId || null),
+      parentEpicCode: sourceCard.isEpic ? sourceCard.code : (sourceCard.parentEpicCode || null),
+      parentEpicTitle: sourceCard.isEpic ? sourceCard.title : (sourceCard.parentEpicTitle || null),
+    };
+    this.cards.push(bugCard);
+    return bugCard;
+  }
+
   /**
    * ADVANCE TO NEXT DAY
    */
@@ -1204,9 +1268,9 @@ export class KanbanGameEngine {
       }
     });
 
-    // 2.2 Novas Demandas Automáticas no Backlog (no mínimo 1 a cada 2 dias)
+    // 2.2 Novas Demandas Automáticas no Backlog (Ciclo a cada 7 dias para evitar sobrecarga)
     const daysSinceLastDemand = this.day - this.lastDemandGeneratedDay;
-    if (daysSinceLastDemand >= 2 || (this.day > 1 && Math.random() < 0.65)) {
+    if (this.day > 1 && daysSinceLastDemand >= 7) {
       const newDemand = this.spawnRandomBacklogDemand();
       this.lastDemandGeneratedDay = this.day;
 
@@ -1218,33 +1282,60 @@ export class KanbanGameEngine {
       };
       const label = typeLabels[newDemand.demandType || 'story'] || 'Demanda';
 
-      if (!this.lastEvent || this.lastEvent.type === 'positive') {
-        const backlogNotice: EventLog = {
-          day: this.day,
-          title: `📥 Nova Demanda no Backlog: [${newDemand.code}]`,
-          badge: label,
-          type: 'neutral',
-          description: `Uma nova demanda do tipo "${label}" chegou ao Backlog: "${newDemand.title}".`,
-          impactText: newDemand.demandType === 'docs'
-            ? 'Atenção: Documentação gera apenas custo sem lucro! Quanto mais demorar a entrega, maior o custo ao final.'
-            : `Valor estimado: R$ ${newDemand.baseValue.toLocaleString('pt-BR')} (Prazo: D${newDemand.deadlineDay}).`,
-          customResult: 'Gerencie o fluxo e respeite os limites de WIP do squad.',
-        };
-        this.eventsHistory.unshift(backlogNotice);
-        if (!this.lastEvent) this.lastEvent = backlogNotice;
-      }
+      const backlogNotice: EventLog = {
+        day: this.day,
+        title: `📥 Nova Demanda Periódica no Backlog (Ciclo de 7 Dias): [${newDemand.code}]`,
+        badge: label,
+        type: 'neutral',
+        description: `Conforme o ciclo regular de 7 dias, uma nova demanda do tipo "${label}" chegou ao Backlog: "${newDemand.title}".`,
+        impactText: newDemand.demandType === 'docs'
+          ? 'Atenção: Documentação gera apenas custo sem lucro! Quanto mais demorar a entrega, maior o custo ao final.'
+          : `Valor estimado: R$ ${newDemand.baseValue.toLocaleString('pt-BR')} (Prazo: D${newDemand.deadlineDay}).`,
+        customResult: 'Gerencie o fluxo e respeite os limites de WIP do squad.',
+      };
+      this.eventsHistory.unshift(backlogNotice);
+      if (!this.lastEvent || this.lastEvent.type === 'positive') this.lastEvent = backlogNotice;
+    }
+
+    // 2.2b Bugs gerados de forma aleatória quando há Story ou Epic em Desenvolvimento Ativo (column === 'analysis')
+    const activeDevCards = this.cards.filter(c => c.column === 'analysis' && (c.demandType === 'story' || c.isEpic || !c.demandType));
+    if (activeDevCards.length > 0 && Math.random() < 0.35) {
+      const sourceCard = activeDevCards[Math.floor(Math.random() * activeDevCards.length)];
+      const bugCard = this.spawnBugFromActiveDev(sourceCard);
+
+      const devBugNotice: EventLog = {
+        day: this.day,
+        title: `🐛 Bug Detectado no Desenvolvimento Ativo!`,
+        badge: 'Defeito em Código',
+        type: 'negative',
+        description: `Durante o Desenvolvimento Ativo de "${sourceCard.title}" [${sourceCard.code}], um defeito foi detectado e gerou a demanda [${bugCard.code}].`,
+        impactText: `Demanda de bug inserida no Backlog (Valor: R$ ${bugCard.baseValue.toLocaleString('pt-BR')}, Prazo: D${bugCard.deadlineDay}).`,
+        customResult: 'Priorize a resolução no fluxo para assegurar a qualidade das entregas.',
+      };
+      this.eventsHistory.unshift(devBugNotice);
+      if (!this.lastEvent || this.lastEvent.type === 'positive') this.lastEvent = devBugNotice;
     }
 
     // 2.3 Progressão de Demandas de Épicos (Stories e Bugs gerados automaticamente ao longo do fluxo)
     const activeEpics = this.cards.filter(c => c.isEpic && c.column !== 'deployed');
     activeEpics.forEach(epic => {
+      // Quando o épico atinge a conclusão de Desenvolvimento Ativo, Revisão e Validação, não deve mais gerar stories e bugs!
+      const phasesCompleted = 
+        epic.doneAnalysis >= epic.effortAnalysis && 
+        epic.doneDev >= epic.effortDev && 
+        epic.doneTest >= epic.effortTest;
+
+      if (phasesCompleted) {
+        return; // Interrompe geração de novos stories/bugs para este épico concluído em esforço
+      }
+
       const hasPendingStories = (epic.epicSpawnedStories || 0) < (epic.epicTotalStories || 0);
       const hasPendingBugs = (epic.epicSpawnedBugs || 0) < (epic.epicTotalBugs || 0);
 
-      if (hasPendingStories && Math.random() < 0.70) {
+      if (hasPendingStories && Math.random() < 0.45) {
         this.spawnEpicChildDemand(epic, 'story');
       }
-      if (hasPendingBugs && Math.random() < 0.50) {
+      if (hasPendingBugs && Math.random() < 0.30) {
         this.spawnEpicChildDemand(epic, 'bug');
       }
     });
@@ -1638,7 +1729,7 @@ export class KanbanGameEngine {
       this.wipLimits = gd.wipLimits || this.wipLimits;
       this.cards = gd.cards || [];
       this.financial = gd.financial || this.financial;
-      if (this.financial.initialCash === undefined) this.financial.initialCash = 1000000;
+      if (this.financial.initialCash === undefined) this.financial.initialCash = 10000;
       if (this.financial.currentCash === undefined) {
         this.financial.currentCash = this.financial.initialCash + (this.financial.netProfit || 0);
       }

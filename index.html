@@ -40,9 +40,6 @@
         <button id="btnNewCard" class="btn btn-secondary" title="Criar nova demanda personalizada">
           ➕ Nova Demanda
         </button>
-        <button id="btnWipLimits" class="btn btn-secondary" title="Ajustar limites de WIP de cada etapa">
-          ⚙️ Limites de WIP
-        </button>
         <button id="btnHelpModal" class="btn btn-secondary" title="Instruções de jogo e conceitos ágeis">
           📖 Regras do Jogo
         </button>
@@ -77,7 +74,7 @@
     <div class="kpi-grid">
       <div class="kpi-item kpi-cash-card">
         <span class="kpi-title">💰 Saldo em Caixa</span>
-        <span class="kpi-value profit" id="kpiCash">R$ 1.000.000</span>
+        <span class="kpi-value profit" id="kpiCash">R$ 10.000</span>
       </div>
       <div class="kpi-item">
         <span class="kpi-title">Lucro Líquido</span>
@@ -166,7 +163,7 @@
               <span class="col-sub-title">(A Fazer / To Do)</span>
             </h3>
           </div>
-          <span class="column-wip-badge" id="wip-ready">0/3</span>
+          <span class="column-wip-badge" id="wip-ready">0/10</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-ready" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-ready" data-column="ready"></div>
@@ -182,7 +179,7 @@
               <span class="col-sub-title">(Em Progresso / In Progress / Doing)</span>
             </h3>
           </div>
-          <span class="column-wip-badge" id="wip-analysis">0/2</span>
+          <span class="column-wip-badge" id="wip-analysis">0/10</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-analysis" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-analysis" data-column="analysis"></div>
@@ -198,7 +195,7 @@
               <span class="col-sub-title">(Em Revisão / Code Review / Peer Review)</span>
             </h3>
           </div>
-          <span class="column-wip-badge" id="wip-development">0/3</span>
+          <span class="column-wip-badge" id="wip-development">0/10</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-development" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-development" data-column="development"></div>
@@ -214,7 +211,7 @@
               <span class="col-sub-title">(Pronto para Homologação / UAT)</span>
             </h3>
           </div>
-          <span class="column-wip-badge" id="wip-testing">0/2</span>
+          <span class="column-wip-badge" id="wip-testing">0/10</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-testing" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-testing" data-column="testing"></div>
@@ -298,6 +295,27 @@
             </div>
           </div>
           <canvas id="throughputChartCanvas" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Placar Final da Simulação (Aparece no final da página ao atingir o Dia 31 ou Fim de Ciclo) -->
+    <section class="final-score-section hidden" id="finalScoreSection">
+      <div class="final-score-panel">
+        <div class="final-score-header">
+          <div class="final-score-title-group">
+            <span class="final-score-trophy">🏆</span>
+            <div>
+              <h2 class="final-score-title">Placar Final da Simulação (Dia 31)</h2>
+              <p class="final-score-subtitle">Resultado consolidado do ciclo de 30 dias de gestão ágil e fluxo Kanban.</p>
+            </div>
+          </div>
+          <div class="final-score-header-actions">
+            <button class="btn btn-primary" id="btnRestartFromScoreBox">🔄 Reiniciar Simulação</button>
+          </div>
+        </div>
+        <div class="final-score-content" id="finalScoreContent">
+          <!-- Renderizado dinamicamente pelo UIController -->
         </div>
       </div>
     </section>

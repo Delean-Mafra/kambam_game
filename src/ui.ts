@@ -55,6 +55,14 @@ export class UIController {
       });
     }
 
+    // Scoreboard Box Restart Button (Bottom of Page)
+    const btnScoreBoxRestart = document.getElementById('btnRestartFromScoreBox');
+    if (btnScoreBoxRestart) {
+      btnScoreBoxRestart.addEventListener('click', () => {
+        this.openModal('modalResetConfirm');
+      });
+    }
+
     // Scoreboard Restart Button
     const btnScoreboardRestart = document.getElementById('btnScoreboardRestart');
     if (btnScoreboardRestart) {
@@ -370,6 +378,11 @@ export class UIController {
   }
 
   public handleNextDay(): void {
+    if (this.engine.day >= 31 || this.engine.isGameOver) {
+      this.showToast('A simulação alcançou o Dia 31. O ciclo foi encerrado! Confira o resultado final no fim da página.', 'info');
+      return;
+    }
+
     const result = this.engine.nextDay();
     this.updateAll();
 
@@ -391,6 +404,13 @@ export class UIController {
       } else if (result.gameOverReason === 'completed' && result.score) {
         soundEngine.playTaskComplete();
         this.showScoreboardModal(result.score);
+        // Scroll to the final score section at the bottom of the page
+        const scoreSection = document.getElementById('finalScoreSection');
+        if (scoreSection) {
+          setTimeout(() => {
+            scoreSection.scrollIntoView({ behavior: 'smooth' });
+          }, 350);
+        }
       }
     }
   }
@@ -427,12 +447,28 @@ export class UIController {
     this.renderKPIs();
     this.renderBoard();
     this.renderCharts();
+    this.renderFinalScoreSection();
   }
 
   private renderHeader(): void {
     const dayVal = document.getElementById('currentDayValue');
     if (dayVal) {
       dayVal.textContent = Math.min(31, this.engine.day).toString();
+    }
+
+    const btnNext = document.getElementById('btnNextDay') as HTMLButtonElement | null;
+    const isDay31OrOver = this.engine.day >= 31 || this.engine.isGameOver;
+    if (btnNext) {
+      btnNext.disabled = isDay31OrOver;
+      if (isDay31OrOver) {
+        btnNext.classList.add('disabled');
+        btnNext.setAttribute('disabled', 'true');
+        btnNext.title = 'A simulação chegou ao Dia 31. O ciclo foi encerrado!';
+      } else {
+        btnNext.classList.remove('disabled');
+        btnNext.removeAttribute('disabled');
+        btnNext.title = 'Avançar para o próximo dia (Atalho: Barra de Espaço)';
+      }
     }
   }
 
@@ -575,25 +611,27 @@ export class UIController {
       const wipBadge = document.getElementById(`wip-${col}`);
       const wipBarFill = document.getElementById(`wipfill-${col}`);
       const colCards = this.engine.cards.filter(c => c.column === col);
+      // O Épico não deve contar nem somar com os outros cards no WIP da coluna (apenas stories e bugs contam)
+      const wipCards = colCards.filter(c => !c.isEpic);
       const limit = (this.engine.wipLimits as any)[col] || 999;
 
       if (wipBadge) {
         if (limit >= 999) {
           wipBadge.textContent = `${colCards.length}`;
         } else {
-          wipBadge.textContent = `${colCards.length}/${limit}`;
+          wipBadge.textContent = `${wipCards.length}/${limit}`;
           wipBadge.className = 'column-wip-badge';
-          if (colCards.length >= limit) wipBadge.classList.add('breached');
-          else if (colCards.length === limit - 1) wipBadge.classList.add('near-limit');
+          if (wipCards.length >= limit) wipBadge.classList.add('breached');
+          else if (wipCards.length === limit - 1) wipBadge.classList.add('near-limit');
         }
       }
 
       if (wipBarFill && limit < 999) {
-        const pct = Math.min(100, (colCards.length / limit) * 100);
+        const pct = Math.min(100, (wipCards.length / limit) * 100);
         wipBarFill.style.width = `${pct}%`;
         wipBarFill.className = 'wip-fill';
-        if (colCards.length >= limit) wipBarFill.classList.add('danger');
-        else if (colCards.length === limit - 1) wipBarFill.classList.add('warning');
+        if (wipCards.length >= limit) wipBarFill.classList.add('danger');
+        else if (wipCards.length === limit - 1) wipBarFill.classList.add('warning');
       }
 
       if (!dropzone) return;
@@ -658,21 +696,38 @@ export class UIController {
     if (card.isEpic) {
       const childStories = this.engine.cards.filter(c => c.parentEpicId === card.id && c.demandType === 'story');
       const childBugs = this.engine.cards.filter(c => c.parentEpicId === card.id && c.demandType === 'bug');
+      const allLinked = this.engine.cards.filter(c => c.parentEpicId === card.id);
       const childDelivered = childStories.filter(c => c.column === 'deployed').length;
       const totalStories = Math.max(card.epicTotalStories || 0, childStories.length);
       const totalBugs = Math.max(card.epicTotalBugs || 0, childBugs.length);
       const pct = totalStories > 0 ? Math.round((childDelivered / totalStories) * 100) : 0;
 
+      const phasesCompleted = card.doneAnalysis >= card.effortAnalysis && card.doneDev >= card.effortDev && card.doneTest >= card.effortTest;
+      const allLinkedDelivered = allLinked.length > 0 && allLinked.every(c => c.column === 'deployed');
+
+      let statusMsgHtml = '';
+      if (phasesCompleted) {
+        statusMsgHtml += `<div class="epic-note-tag phases-done">✨ Desenv, Revisão e Validação do Épico concluídos!</div>`;
+      }
+      if (card.column !== 'deployed') {
+        if (allLinkedDelivered && phasesCompleted) {
+          statusMsgHtml += `<div class="epic-note-tag ready-done">🎉 Todas as histórias vinculadas foram entregues! Pronto para marcar como Concluído.</div>`;
+        } else {
+          statusMsgHtml += `<div class="epic-note-tag pending-stories">⏳ Conclusão bloqueada: finalize as histórias vinculadas (${childDelivered}/${totalStories} entregues)</div>`;
+        }
+      }
+
       epicProgressHtml = `
         <div class="epic-progress-box">
           <div class="epic-progress-header">
-            <span>⚡ Decomposição do Épico no Backlog:</span>
+            <span>⚡ Histórias & Bugs do Épico:</span>
             <span class="epic-progress-stat">${childDelivered}/${totalStories} Stories • ${totalBugs} Bugs</span>
           </div>
           <div class="epic-progress-bar-wrap" title="${pct}% das histórias concluídas">
             <div class="epic-progress-bar-fill" style="width: ${pct}%"></div>
           </div>
-          <div class="epic-capacity-note">👥 Squad com 3 Devs fixos calculados</div>
+          ${statusMsgHtml}
+          <div class="epic-capacity-note">👥 Épico não ocupa WIP da coluna (apenas Stories/Bugs)</div>
         </div>
       `;
     }
@@ -1199,5 +1254,108 @@ export class UIController {
     `;
 
     modal.classList.add('active');
+  }
+
+  /**
+   * Renders the final score directly into the box at the bottom of the page
+   */
+  public renderFinalScoreSection(): void {
+    const section = document.getElementById('finalScoreSection');
+    const content = document.getElementById('finalScoreContent');
+    if (!section || !content) return;
+
+    const isFinished = this.engine.day >= 31 || this.engine.isGameOver;
+    if (!isFinished) {
+      section.classList.add('hidden');
+      return;
+    }
+
+    section.classList.remove('hidden');
+    const score = this.engine.finalScore || this.engine.calculateScore();
+    const rankColors: Record<string, string> = {
+      'S': '#fbbf24',
+      'A': '#10b981',
+      'B': '#3b82f6',
+      'C': '#8b5cf6',
+      'D': '#ef4444',
+    };
+    const rankColor = rankColors[score.rank] || '#10b981';
+
+    content.innerHTML = `
+      <div class="scoreboard-hero">
+        <div class="score-rank-badge" style="border-color: ${rankColor}; color: ${rankColor};">
+          <span class="rank-letter">${score.rank}</span>
+          <span class="rank-score">${score.totalScore} pts</span>
+        </div>
+        <div class="score-hero-details">
+          <h3 class="score-title">${score.rankTitle}</h3>
+          <p class="score-subtitle">
+            ${this.engine.gameOverReason === 'bankruptcy' 
+              ? `Simulação interrompida no Dia ${score.finishedDay} por falta de caixa.` 
+              : `Ciclo completo de 30 dias de simulação finalizado com sucesso no Dia 31.`}
+          </p>
+        </div>
+      </div>
+
+      <div class="score-section-title">💰 Desempenho Financeiro & Caixa</div>
+      <div class="score-stat-grid">
+        <div class="score-stat-card">
+          <span class="stat-label">Saldo Inicial</span>
+          <span class="stat-val">R$ ${score.initialCash.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card highlight">
+          <span class="stat-label">Saldo Final em Caixa</span>
+          <span class="stat-val ${score.finalCash >= 0 ? 'profit' : 'loss'}">
+            ${score.finalCash < 0 ? '-' : ''}R$ ${Math.abs(score.finalCash).toLocaleString('pt-BR')}
+          </span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Lucro Líquido Acumulado</span>
+          <span class="stat-val ${score.netProfit >= 0 ? 'profit' : 'loss'}">
+            ${score.netProfit >= 0 ? '+' : ''}R$ ${score.netProfit.toLocaleString('pt-BR')}
+          </span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Faturamento Total</span>
+          <span class="stat-val profit">R$ ${score.totalRevenue.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Custos com Pessoal</span>
+          <span class="stat-val cost">R$ ${score.totalCost.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Penalidades por Atraso</span>
+          <span class="stat-val ${score.totalPenalties > 0 ? 'warning' : 'profit'}">-R$ ${score.totalPenalties.toLocaleString('pt-BR')}</span>
+        </div>
+      </div>
+
+      <div class="score-section-title">📊 Eficiência Operacional & Métricas de Fluxo</div>
+      <div class="score-stat-grid">
+        <div class="score-stat-card">
+          <span class="stat-label">Demandas Entregues</span>
+          <span class="stat-val" style="color: #60a5fa;">${score.deliveredCount} itens</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Entregas no Prazo</span>
+          <span class="stat-val profit">${score.onTimeCount} (${score.onTimeRate}%)</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Entregas com Atraso</span>
+          <span class="stat-val ${score.delayedCount > 0 ? 'warning' : 'profit'}">${score.delayedCount} itens</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Lead Time Médio</span>
+          <span class="stat-val">${score.avgLeadTime} dias</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">Throughput Médio</span>
+          <span class="stat-val">${score.throughput} /dia</span>
+        </div>
+        <div class="score-stat-card">
+          <span class="stat-label">WIP Restante</span>
+          <span class="stat-val">${score.wipRemaining} itens</span>
+        </div>
+      </div>
+    `;
   }
 }
