@@ -104,7 +104,7 @@ export class KanbanGameEngine {
         assignedCardId: null,
       },
 
-      // 3 Desenvolvedores (EXCLUSIVOS para Desenvolvimento)
+      // 3 Desenvolvedores (EXCLUSIVOS para Revisão de Código e Qualidade)
       dev1: {
         id: 'dev1',
         name: 'Lucas',
@@ -142,7 +142,7 @@ export class KanbanGameEngine {
         assignedCardId: null,
       },
 
-      // 3 Testadores / QA (EXCLUSIVOS para Testes & QA)
+      // 3 Testadores / QA (EXCLUSIVOS para Validação do Produto)
       qa1: {
         id: 'qa1',
         name: 'Beatriz',
@@ -291,9 +291,9 @@ export class KanbanGameEngine {
         description: 'Migração de cache local para Redis Cluster de alta disponibilidade.',
         classOfService: 'tech-debt',
         demandType: 'story',
-        column: 'ready',
+        column: 'backlog',
         createdDay: 1,
-        startedDay: 1,
+        startedDay: null,
         completedDay: null,
         deadlineDay: 10,
         baseValue: 900,
@@ -320,9 +320,9 @@ export class KanbanGameEngine {
         description: 'Métricas gerenciais com WebSockets para diretoria de operações.',
         classOfService: 'standard',
         demandType: 'story',
-        column: 'ready',
+        column: 'backlog',
         createdDay: 1,
-        startedDay: 1,
+        startedDay: null,
         completedDay: null,
         deadlineDay: 8,
         baseValue: 2400,
@@ -492,9 +492,9 @@ export class KanbanGameEngine {
     // Role check: agent can ONLY be assigned if the card is in their allowed stage
     if (card.column !== agent.allowedStage) {
       const stageNames: Record<string, string> = {
-        analysis: 'Análise & Discovery',
-        development: 'Desenvolvimento',
-        testing: 'Testes & QA',
+        analysis: 'Desenvolvimento Ativo(Em Progresso / In Progress / Doing)',
+        development: 'Revisão de Código e Qualidade(Em Revisão / Code Review / Peer Review)',
+        testing: 'Validação do Produto( Pronto para Homologação / UAT - User Acceptance Testing)',
       };
       const allowedName = stageNames[agent.allowedStage] || agent.allowedStage;
       return {
@@ -523,37 +523,98 @@ export class KanbanGameEngine {
     return currentCount < limit;
   }
 
+  /**
+   * Quick-advance a card to its next sequential stage
+   */
+  public advanceCard(cardId: string): { success: boolean; message?: string; card?: Card } {
+    const card = this.cards.find(c => c.id === cardId);
+    if (!card) return { success: false, message: 'Cartão não encontrado.' };
+
+    const order = ['backlog', 'ready', 'analysis', 'development', 'testing', 'deployed'];
+    const curCol = (card.column || 'backlog').toLowerCase().trim();
+    const fromIdx = order.indexOf(curCol);
+
+    if (curCol === 'deployed' || fromIdx >= order.length - 1) {
+      return { success: false, message: 'Esta demanda já foi finalizada em Conclusão(Concluído / Done)!' };
+    }
+
+    if (fromIdx < 0) {
+      return this.moveCard(cardId, 'ready');
+    }
+
+    const nextColumn = order[fromIdx + 1];
+    return this.moveCard(cardId, nextColumn);
+  }
+
   public moveCard(cardId: string, targetColumn: any): { success: boolean; message?: string; card?: Card } {
     const card = this.cards.find(c => c.id === cardId);
     if (!card) return { success: false, message: 'Cartão não encontrado.' };
 
-    if (card.column === targetColumn) return { success: true };
+    const target = (targetColumn || '').toString().toLowerCase().trim();
+    const current = (card.column || 'backlog').toString().toLowerCase().trim();
+
+    if (current === target) return { success: true, card };
+
+    const colDisplayNames: Record<string, string> = {
+      backlog: 'Backlog',
+      ready: 'Sprint Backlog(A Fazer / To Do)',
+      analysis: 'Desenvolvimento Ativo(Em Progresso / In Progress / Doing)',
+      development: 'Revisão de Código e Qualidade(Em Revisão / Code Review / Peer Review)',
+      testing: 'Validação do Produto( Pronto para Homologação / UAT - User Acceptance Testing)',
+      deployed: 'Conclusão(Concluído / Done)',
+    };
 
     const isExpedite = card.classOfService === 'expedite';
-    if (!this.canMoveTo(targetColumn) && !isExpedite) {
-      const limit = (this.wipLimits as any)[targetColumn] || 999;
+    if (!this.canMoveTo(target) && !isExpedite) {
+      const limit = (this.wipLimits as any)[target] || 999;
+      const targetLabel = colDisplayNames[target] || target.toUpperCase();
       return {
         success: false,
-        message: `Limite de WIP da coluna "${targetColumn.toUpperCase()}" atingido! Respeite o fluxo (Máx: ${limit}).`,
+        message: `Limite de WIP da coluna "${targetLabel}" atingido! Respeite o fluxo (Máx: ${limit}).`,
       };
     }
 
     const order = ['backlog', 'ready', 'analysis', 'development', 'testing', 'deployed'];
-    const fromIdx = order.indexOf(card.column);
-    const toIdx = order.indexOf(targetColumn);
+    const fromIdx = Math.max(0, order.indexOf(current));
+    const toIdx = order.indexOf(target);
+
+    if (toIdx < 0) {
+      return { success: false, message: `Etapa de destino "${target}" desconhecida.` };
+    }
 
     if (toIdx > fromIdx) {
-      if (card.column === 'analysis' && card.doneAnalysis < card.effortAnalysis) {
-        return { success: false, message: `Análise incompleta (${card.doneAnalysis}/${card.effortAnalysis} pts). Realize o discovery antes!` };
-      }
-      if (card.column === 'development' && card.doneDev < card.effortDev) {
-        return { success: false, message: `Desenvolvimento incompleto (${card.doneDev}/${card.effortDev} pts). Código ainda em construção!` };
-      }
-      if (card.column === 'testing' && card.doneTest < card.effortTest) {
-        return { success: false, message: `Testes incompletos (${card.doneTest}/${card.effortTest} pts). Qualidade ainda não homologada!` };
-      }
       if (card.isBlocked) {
         return { success: false, message: `Cartão está BLOQUEADO por impedimento externo. Desbloqueie-o primeiro!` };
+      }
+
+      // Regra de Conclusão: exige que todas as etapas estejam concluídas
+      if (target === 'deployed') {
+        if (card.doneAnalysis < card.effortAnalysis || card.doneDev < card.effortDev || card.doneTest < card.effortTest) {
+          return {
+            success: false,
+            message: `Demanda incompleta! Para ir para Conclusão, cumpra o fluxo: Desenv. Ativo (${card.doneAnalysis}/${card.effortAnalysis}), Revisão (${card.doneDev}/${card.effortDev}) e Validação (${card.doneTest}/${card.effortTest}).`,
+          };
+        }
+      }
+
+      if (current === 'analysis' && card.doneAnalysis < card.effortAnalysis) {
+        return { success: false, message: `Desenvolvimento Ativo incompleto (${card.doneAnalysis}/${card.effortAnalysis} pts). Finalize antes de mover para Revisão de Código!` };
+      }
+      if (current === 'development' && card.doneDev < card.effortDev) {
+        return { success: false, message: `Revisão de Código incompleta (${card.doneDev}/${card.effortDev} pts). Código ainda em construção!` };
+      }
+      if (current === 'testing' && card.doneTest < card.effortTest) {
+        return { success: false, message: `Validação do Produto incompleta (${card.doneTest}/${card.effortTest} pts). Qualidade ainda não homologada!` };
+      }
+
+      // Prevenir pulo de etapas sequenciais (ex: de backlog/ready direto para deployed)
+      if (toIdx > fromIdx + 1 && !isExpedite) {
+        const nextCol = order[fromIdx + 1];
+        const nextLabel = colDisplayNames[nextCol] || nextCol;
+        return {
+          success: false,
+          message: `Fluxo Sequencial Kanban: mova a demanda primeiro para "${nextLabel}" antes de avançar para etapas seguintes!`,
+        };
       }
     }
 
@@ -561,7 +622,7 @@ export class KanbanGameEngine {
     if (card.assignedAgents && card.assignedAgents.length > 0) {
       card.assignedAgents = card.assignedAgents.filter(agentId => {
         const agent = this.agents[agentId];
-        if (agent && agent.allowedStage !== targetColumn) {
+        if (agent && agent.allowedStage !== target) {
           agent.assignedCardId = null;
           return false;
         }
@@ -569,13 +630,13 @@ export class KanbanGameEngine {
       });
     }
 
-    card.column = targetColumn;
+    card.column = target as any;
 
-    if (targetColumn === 'ready' && !card.startedDay) {
+    if (target === 'ready' && !card.startedDay) {
       card.startedDay = this.day;
     }
 
-    if (targetColumn === 'deployed' && !card.completedDay) {
+    if (target === 'deployed' && !card.completedDay) {
       card.completedDay = this.day;
       let earned = Math.max(0, card.currentValue);
 

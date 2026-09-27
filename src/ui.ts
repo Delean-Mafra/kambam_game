@@ -438,9 +438,9 @@ export class UIController {
 
   /**
    * Renders the 9 Squad Members grouped cleanly by functional roles:
-   * - 3 Analistas de Negócios (Análise & Discovery)
-   * - 3 Desenvolvedores (Desenvolvimento)
-   * - 3 Testadores / QA (Testes & QA)
+   * - 3 Especialistas em Desenvolvimento Ativo (Em Progresso / In Progress / Doing)
+   * - 3 Engenheiros em Revisão de Código e Qualidade (Em Revisão / Code Review / Peer Review)
+   * - 3 Especialistas em Validação do Produto (Pronto para Homologação / UAT)
    */
   private renderSquad(): void {
     const container = document.getElementById('squadMembers');
@@ -450,24 +450,24 @@ export class UIController {
 
     const roleGroups: { title: string; role: string; color: string; badge: string; list: SquadMember[] }[] = [
       {
-        title: 'Analistas de Negócios (Discovery)',
+        title: 'Desenvolvimento Ativo (Doing)',
         role: 'analyst',
         color: '#ec4899',
-        badge: '🔍 Análise',
+        badge: '💻 Desenv. Ativo',
         list: Object.values(this.engine.agents).filter(a => a.role === 'analyst'),
       },
       {
-        title: 'Desenvolvedores (Engenharia)',
+        title: 'Revisão de Código & Qualidade',
         role: 'developer',
         color: '#8b5cf6',
-        badge: '💻 Desenvolvimento',
+        badge: '🔍 Code Review',
         list: Object.values(this.engine.agents).filter(a => a.role === 'developer'),
       },
       {
-        title: 'Testadores / QA (Qualidade)',
+        title: 'Validação do Produto & UAT',
         role: 'qa',
         color: '#10b981',
-        badge: '🧪 Testes',
+        badge: '🧪 Homologação',
         list: Object.values(this.engine.agents).filter(a => a.role === 'qa'),
       },
     ];
@@ -581,7 +581,7 @@ export class UIController {
         if (limit >= 999) {
           wipBadge.textContent = `${colCards.length}`;
         } else {
-          wipBadge.textContent = `${colCards.length} / ${limit}`;
+          wipBadge.textContent = `${colCards.length}/${limit}`;
           wipBadge.className = 'column-wip-badge';
           if (colCards.length >= limit) wipBadge.classList.add('breached');
           else if (colCards.length === limit - 1) wipBadge.classList.add('near-limit');
@@ -719,12 +719,16 @@ export class UIController {
     }
 
     let readyBadge = '';
-    if (card.column === 'analysis' && card.doneAnalysis >= card.effortAnalysis) {
-      readyBadge = '<div class="ready-next-badge">✨ Análise concluída! Pronto para Dev</div>';
+    if (card.column === 'backlog') {
+      readyBadge = `<div class="ready-next-badge"><button type="button" class="btn-advance-step" onclick="window.uiController.advanceCard('${card.id}')">➡️ Puxar p/ Sprint Backlog</button></div>`;
+    } else if (card.column === 'ready') {
+      readyBadge = `<div class="ready-next-badge"><button type="button" class="btn-advance-step" onclick="window.uiController.advanceCard('${card.id}')">➡️ Iniciar Desenv. Ativo</button></div>`;
+    } else if (card.column === 'analysis' && card.doneAnalysis >= card.effortAnalysis) {
+      readyBadge = `<div class="ready-next-badge"><span>✨ Desenv. Ativo concluído!</span> <button type="button" class="btn-advance-step" onclick="window.uiController.advanceCard('${card.id}')">➡️ Mover p/ Revisão</button></div>`;
     } else if (card.column === 'development' && card.doneDev >= card.effortDev) {
-      readyBadge = '<div class="ready-next-badge">✨ Código concluído! Pronto para Teste</div>';
+      readyBadge = `<div class="ready-next-badge"><span>✨ Revisão aprovada!</span> <button type="button" class="btn-advance-step" onclick="window.uiController.advanceCard('${card.id}')">➡️ Mover p/ Validação</button></div>`;
     } else if (card.column === 'testing' && card.doneTest >= card.effortTest) {
-      readyBadge = '<div class="ready-next-badge">✨ Testes aprovados! Pronto para Deploy</div>';
+      readyBadge = `<div class="ready-next-badge"><span>✨ Validação aprovada!</span> <button type="button" class="btn-advance-step" onclick="window.uiController.advanceCard('${card.id}')">🚀 Concluir Demanda</button></div>`;
     }
 
     let blockedBadge = '';
@@ -741,7 +745,7 @@ export class UIController {
     if (card.bugRejectionCount > 0 && card.column === 'development') {
       bugBanner = `
         <div class="bug-rejection-banner">
-          <span>🚨 Reprovado em QA! Retornou p/ Dev</span>
+          <span>🚨 Reprovado em Validação! Retornou p/ Revisão de Código</span>
         </div>
       `;
     }
@@ -757,8 +761,8 @@ export class UIController {
       allocationHtml = `
         <div class="card-allocation-box">
           <div class="allocation-label-row">
-            <span>Alocar Analistas de Negócios (Discovery):</span>
-            ${isSwarming ? `<span class="swarming-pill">⚡ Swarming (${assigned.length} analistas)</span>` : ''}
+            <span>Alocar Especialistas (Desenvolvimento Ativo):</span>
+            ${isSwarming ? `<span class="swarming-pill">⚡ Swarming (${assigned.length} especialistas)</span>` : ''}
           </div>
           <div class="assigned-agents-selector">
             ${analysts.map(a => `
@@ -776,7 +780,7 @@ export class UIController {
       allocationHtml = `
         <div class="card-allocation-box">
           <div class="allocation-label-row">
-            <span>Alocar Desenvolvedores (Engenharia):</span>
+            <span>Alocar Engenharia (Revisão de Código e Qualidade):</span>
             ${isSwarming ? `<span class="swarming-pill">⚡ Swarming (${assigned.length} devs)</span>` : ''}
           </div>
           <div class="assigned-agents-selector">
@@ -795,7 +799,7 @@ export class UIController {
       allocationHtml = `
         <div class="card-allocation-box">
           <div class="allocation-label-row">
-            <span>Alocar Testadores / QA (Qualidade):</span>
+            <span>Alocar Especialistas (Validação do Produto / UAT):</span>
             ${isSwarming ? `<span class="swarming-pill">⚡ Swarming (${assigned.length} QAs)</span>` : ''}
           </div>
           <div class="assigned-agents-selector">
@@ -852,21 +856,21 @@ export class UIController {
       <!-- Stage Effort Bars -->
       <div class="stages-progress">
         <div class="stage-item">
-          <span class="stage-name">Análise</span>
+          <span class="stage-name" title="Desenvolvimento Ativo (Doing)">Desenv. Ativo</span>
           <div class="stage-bar-wrap">
             <div class="stage-bar-fill analysis" style="width: ${(card.doneAnalysis / card.effortAnalysis) * 100}%"></div>
           </div>
           <span class="stage-count">${card.doneAnalysis}/${card.effortAnalysis}</span>
         </div>
         <div class="stage-item">
-          <span class="stage-name">Dev</span>
+          <span class="stage-name" title="Revisão de Código e Qualidade (Code Review)">Revisão</span>
           <div class="stage-bar-wrap">
             <div class="stage-bar-fill development" style="width: ${(card.doneDev / card.effortDev) * 100}%"></div>
           </div>
           <span class="stage-count">${card.doneDev}/${card.effortDev}</span>
         </div>
         <div class="stage-item">
-          <span class="stage-name">QA</span>
+          <span class="stage-name" title="Validação do Produto (UAT)">Validação</span>
           <div class="stage-bar-wrap">
             <div class="stage-bar-fill testing" style="width: ${(card.doneTest / card.effortTest) * 100}%"></div>
           </div>
@@ -928,6 +932,28 @@ export class UIController {
       this.showToast('Impedimento resolvido! Cartão liberado para avanço.', 'success');
       this.updateAll();
     }
+  }
+
+  public advanceCard(cardId: string): void {
+    const result = this.engine.advanceCard(cardId);
+    if (!result.success) {
+      this.showToast(result.message || 'Não foi possível avançar a demanda.', 'warning');
+      soundEngine.playWarning();
+      return;
+    }
+
+    soundEngine.playCardDrop();
+    this.updateAll();
+    const card = this.engine.cards.find(c => c.id === cardId);
+    const colLabels: Record<string, string> = {
+      ready: 'Sprint Backlog(A Fazer / To Do)',
+      analysis: 'Desenvolvimento Ativo(Em Progresso / In Progress / Doing)',
+      development: 'Revisão de Código e Qualidade(Em Revisão / Code Review / Peer Review)',
+      testing: 'Validação do Produto( Pronto para Homologação / UAT - User Acceptance Testing)',
+      deployed: 'Conclusão(Concluído / Done)',
+    };
+    const colName = card ? (colLabels[card.column] || card.column) : 'nova etapa';
+    this.showToast(`Demanda [${card?.code || cardId}] avançou para "${colName}"!`, 'success');
   }
 
   private renderCharts(): void {

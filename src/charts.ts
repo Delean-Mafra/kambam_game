@@ -56,11 +56,11 @@ export class ChartsEngine {
     const stepX = cfdHistory.length > 1 ? chartW / (cfdHistory.length - 1) : chartW;
 
     const layers: { key: keyof CFDPoint; color: string; label: string }[] = [
-      { key: 'deployed', color: '#10b981', label: 'Concluído' },
-      { key: 'testing', color: '#06b6d4', label: 'Teste' },
-      { key: 'development', color: '#6366f1', label: 'Dev' },
-      { key: 'analysis', color: '#ec4899', label: 'Análise' },
-      { key: 'ready', color: '#f59e0b', label: 'Pronto' },
+      { key: 'deployed', color: '#10b981', label: 'Conclusão' },
+      { key: 'testing', color: '#06b6d4', label: 'Validação' },
+      { key: 'development', color: '#6366f1', label: 'Revisão' },
+      { key: 'analysis', color: '#ec4899', label: 'Desenv. Ativo' },
+      { key: 'ready', color: '#f59e0b', label: 'Sprint Backlog' },
     ];
 
     const stackedSeries: number[][] = layers.map(() => []);

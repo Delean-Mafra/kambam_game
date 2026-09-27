@@ -142,8 +142,8 @@
       <div class="kanban-column" id="col-backlog">
         <div class="column-header">
           <div class="column-header-left">
-            <span>📋</span>
-            <h3 class="column-title">Backlog</h3>
+            <span class="column-icon">📋</span>
+            <h3 class="column-title"><span class="col-main-title">Backlog</span></h3>
           </div>
           <span class="column-wip-badge" id="wip-backlog">0</span>
         </div>
@@ -156,64 +156,79 @@
         <div class="cards-dropzone" id="cards-backlog" data-column="backlog"></div>
       </div>
 
-      <!-- Column 2: Ready -->
+      <!-- Column 2: Sprint Backlog(A Fazer / To Do) -->
       <div class="kanban-column" id="col-ready">
         <div class="column-header">
           <div class="column-header-left">
-            <span>🎯</span>
-            <h3 class="column-title">Pronto (Ready)</h3>
+            <span class="column-icon">🎯</span>
+            <h3 class="column-title" title="Sprint Backlog(A Fazer / To Do)">
+              <span class="col-main-title">Sprint Backlog</span>
+              <span class="col-sub-title">(A Fazer / To Do)</span>
+            </h3>
           </div>
-          <span class="column-wip-badge" id="wip-ready">0 / 3</span>
+          <span class="column-wip-badge" id="wip-ready">0/3</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-ready" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-ready" data-column="ready"></div>
       </div>
 
-      <!-- Column 3: Analysis -->
+      <!-- Column 3: Desenvolvimento Ativo(Em Progresso / In Progress / Doing) -->
       <div class="kanban-column" id="col-analysis">
         <div class="column-header">
           <div class="column-header-left">
-            <span>🔍</span>
-            <h3 class="column-title">Análise & Discovery</h3>
+            <span class="column-icon">💻</span>
+            <h3 class="column-title" title="Desenvolvimento Ativo(Em Progresso / In Progress / Doing)">
+              <span class="col-main-title">Desenvolvimento Ativo</span>
+              <span class="col-sub-title">(Em Progresso / In Progress / Doing)</span>
+            </h3>
           </div>
-          <span class="column-wip-badge" id="wip-analysis">0 / 2</span>
+          <span class="column-wip-badge" id="wip-analysis">0/2</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-analysis" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-analysis" data-column="analysis"></div>
       </div>
 
-      <!-- Column 4: Development -->
+      <!-- Column 4: Revisão de Código e Qualidade(Em Revisão / Code Review / Peer Review) -->
       <div class="kanban-column" id="col-development">
         <div class="column-header">
           <div class="column-header-left">
-            <span>💻</span>
-            <h3 class="column-title">Desenvolvimento</h3>
+            <span class="column-icon">🔍</span>
+            <h3 class="column-title" title="Revisão de Código e Qualidade(Em Revisão / Code Review / Peer Review)">
+              <span class="col-main-title">Revisão de Código e Qualidade</span>
+              <span class="col-sub-title">(Em Revisão / Code Review / Peer Review)</span>
+            </h3>
           </div>
-          <span class="column-wip-badge" id="wip-development">0 / 3</span>
+          <span class="column-wip-badge" id="wip-development">0/3</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-development" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-development" data-column="development"></div>
       </div>
 
-      <!-- Column 5: Testing -->
+      <!-- Column 5: Validação do Produto( Pronto para Homologação / UAT - User Acceptance Testing) -->
       <div class="kanban-column" id="col-testing">
         <div class="column-header">
           <div class="column-header-left">
-            <span>🧪</span>
-            <h3 class="column-title">Testes & QA</h3>
+            <span class="column-icon">🧪</span>
+            <h3 class="column-title" title="Validação do Produto( Pronto para Homologação / UAT - User Acceptance Testing)">
+              <span class="col-main-title">Validação do Produto</span>
+              <span class="col-sub-title">(Pronto para Homologação / UAT)</span>
+            </h3>
           </div>
-          <span class="column-wip-badge" id="wip-testing">0 / 2</span>
+          <span class="column-wip-badge" id="wip-testing">0/2</span>
         </div>
         <div class="wip-bar"><div class="wip-fill" id="wipfill-testing" style="width:0%"></div></div>
         <div class="cards-dropzone" id="cards-testing" data-column="testing"></div>
       </div>
 
-      <!-- Column 6: Deployed / Done -->
+      <!-- Column 6: Conclusão(Concluído / Done) -->
       <div class="kanban-column" id="col-deployed">
         <div class="column-header">
           <div class="column-header-left">
-            <span>🚀</span>
-            <h3 class="column-title">Concluído (Done)</h3>
+            <span class="column-icon">🚀</span>
+            <h3 class="column-title" title="Conclusão(Concluído / Done)">
+              <span class="col-main-title">Conclusão</span>
+              <span class="col-sub-title">(Concluído / Done)</span>
+            </h3>
           </div>
           <span class="column-wip-badge" id="wip-deployed">0</span>
         </div>
@@ -238,11 +253,11 @@
           <div class="chart-title">
             <span>Diagrama de Fluxo Cumulativo (CFD)</span>
             <div class="chart-legend">
-              <span><span class="legend-dot" style="background:#10b981"></span>Concluído</span>
-              <span><span class="legend-dot" style="background:#06b6d4"></span>Teste</span>
-              <span><span class="legend-dot" style="background:#6366f1"></span>Dev</span>
-              <span><span class="legend-dot" style="background:#ec4899"></span>Análise</span>
-              <span><span class="legend-dot" style="background:#f59e0b"></span>Pronto</span>
+              <span><span class="legend-dot" style="background:#10b981"></span>Conclusão</span>
+              <span><span class="legend-dot" style="background:#06b6d4"></span>Validação</span>
+              <span><span class="legend-dot" style="background:#6366f1"></span>Revisão</span>
+              <span><span class="legend-dot" style="background:#ec4899"></span>Desenv. Ativo</span>
+              <span><span class="legend-dot" style="background:#f59e0b"></span>Sprint Backlog</span>
             </div>
           </div>
           <canvas id="cfdChartCanvas" class="chart-canvas"></canvas>
@@ -341,8 +356,12 @@
             <span class="author-value">Janeiro de 2026</span>
           </div>
           <div class="author-meta-row">
-            <span class="author-label">📊 Natureza:</span>
-            <span class="author-value">Hakatime Projects • Simulador Educacional de Fluxo Ágil (Kanban)</span>
+            <span class="author-label">📊 Tipo de Projeto:</span>
+            <span class="author-value">Natureza: Hakatime Projects • Escopo: Simulador educacional de fluxo de trabalho ágil (Kanban)</span>
+          </div>
+          <div class="author-meta-row">
+            <span class="author-label">🛠️ Tecnologias:</span>
+            <span class="author-value">Python, Flask, Web Development, Simulação, Data Visualization</span>
           </div>
         </div>
 
@@ -440,15 +459,15 @@
             <label class="form-label">Esforço Técnico Estimado por Fase (Pontos)</label>
             <div class="form-row-3">
               <div>
-                <label class="form-label" style="font-size:0.65rem; color:#ec4899;" for="cardEffortAnalysis">Análise</label>
+                <label class="form-label" style="font-size:0.65rem; color:#ec4899;" for="cardEffortAnalysis">Desenvolvimento Ativo (Doing)</label>
                 <input type="number" id="cardEffortAnalysis" class="form-control" value="3" min="1" max="10">
               </div>
               <div>
-                <label class="form-label" style="font-size:0.65rem; color:#8b5cf6;" for="cardEffortDev">Desenvolvimento</label>
+                <label class="form-label" style="font-size:0.65rem; color:#8b5cf6;" for="cardEffortDev">Revisão de Código (Code Review)</label>
                 <input type="number" id="cardEffortDev" class="form-control" value="6" min="1" max="25">
               </div>
               <div>
-                <label class="form-label" style="font-size:0.65rem; color:#10b981;" for="cardEffortTest">Testes & QA</label>
+                <label class="form-label" style="font-size:0.65rem; color:#10b981;" for="cardEffortTest">Validação do Produto (UAT)</label>
                 <input type="number" id="cardEffortTest" class="form-control" value="3" min="1" max="12">
               </div>
             </div>
@@ -505,21 +524,21 @@
           </p>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="wipReady">Pronto (Ready)</label>
+              <label class="form-label" for="wipReady">Sprint Backlog (A Fazer)</label>
               <input type="number" id="wipReady" class="form-control" min="1" max="10" value="3">
             </div>
             <div class="form-group">
-              <label class="form-label" for="wipAnalysis">Análise & Discovery</label>
+              <label class="form-label" for="wipAnalysis">Desenvolvimento Ativo (Doing)</label>
               <input type="number" id="wipAnalysis" class="form-control" min="1" max="10" value="2">
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="wipDevelopment">Desenvolvimento</label>
+              <label class="form-label" for="wipDevelopment">Revisão de Código (Code Review)</label>
               <input type="number" id="wipDevelopment" class="form-control" min="1" max="10" value="3">
             </div>
             <div class="form-group">
-              <label class="form-label" for="wipTesting">Testes & QA</label>
+              <label class="form-label" for="wipTesting">Validação do Produto (UAT)</label>
               <input type="number" id="wipTesting" class="form-control" min="1" max="10" value="2">
             </div>
           </div>
@@ -550,9 +569,9 @@
           O squad conta com 9 especialistas divididos em 3 categorias. <strong>Cada função só pode atuar dentro de sua respectiva etapa</strong>:
         </p>
         <ul style="padding-left:1.2rem; display:flex; flex-direction:column; gap:0.35rem; margin-top:0.3rem;">
-          <li><strong style="color:#ec4899;">🔍 3 Analistas de Negócios (Sofia, Carlos, Mariana):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Análise & Discovery</strong>. Não podem ser alocados em Desenvolvimento ou Testes.</li>
-          <li><strong style="color:#8b5cf6;">💻 3 Desenvolvedores (Lucas, Rafael, Thiago):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Desenvolvimento</strong>. Não podem ser alocados em Análise ou Testes.</li>
-          <li><strong style="color:#10b981;">🧪 3 Testadores / QA (Beatriz, Gabriela, Rodrigo):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Testes & QA</strong>. Não podem ser alocados em Análise ou Desenvolvimento.</li>
+          <li><strong style="color:#ec4899;">💻 3 Especialistas em Desenv. Ativo (Sofia, Carlos, Mariana):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Desenvolvimento Ativo(Em Progresso / In Progress / Doing)</strong>. Não podem atuar em Revisão ou Validação.</li>
+          <li><strong style="color:#8b5cf6;">🔍 3 Engenheiros de Revisão de Código (Lucas, Rafael, Thiago):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Revisão de Código e Qualidade(Em Revisão / Code Review / Peer Review)</strong>. Não podem atuar em Desenv. Ativo ou Validação.</li>
+          <li><strong style="color:#10b981;">🧪 3 Especialistas em Validação do Produto / QA (Beatriz, Gabriela, Rodrigo):</strong> Atuam <em>EXCLUSIVAMENTE</em> na fase de <strong>Validação do Produto( Pronto para Homologação / UAT - User Acceptance Testing)</strong>. Não podem atuar em Desenv. Ativo ou Revisão.</li>
         </ul>
 
         <h4 style="color:var(--text-primary); font-size:0.92rem; margin-top:0.6rem;">⚡ Swarming (Concentração de Força)</h4>
