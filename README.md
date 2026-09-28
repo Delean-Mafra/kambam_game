@@ -17,7 +17,7 @@ Esta é uma aplicação web interativa que simula um ambiente de desenvolvimento
 - Lead Time e Throughput
 - Gestão financeira de projetos
 
-## 🎯 Características da Versão 1.3 (TypeScript Edition)
+## 🎯 Características da Versão 2.0 (TypeScript Edition)
 
 - **100% TypeScript**: Código reestruturado em TypeScript com Vite, tipagem estrita e build otimizado para deploy estático.
 - **Deploy no GitHub Pages**: Executando `npm run build`, a pasta `dist/` é gerada com caminhos relativos prontos para o GitHub Pages.
