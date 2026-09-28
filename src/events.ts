@@ -106,7 +106,7 @@ export const SQUAD_EVENTS: SquadEventDefinition[] = [
     title: '🤒 Licença Médica de Membro do Squad',
     badge: 'Pessoas',
     type: 'negative',
-    description: 'Mariana (Analista de Negócios) teve indisposição médica e pegou atestado hoje.',
+    description: 'Mari (Analista de Negócios) teve indisposição médica e pegou atestado hoje.',
     impactText: 'A Analista não produz pontos de esforço neste dia.',
     apply(game) {
       if (game.agents.analyst3) {

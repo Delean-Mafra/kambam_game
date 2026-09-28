@@ -71,7 +71,7 @@ export class KanbanGameEngine {
       // 3 Analistas de Negócios (EXCLUSIVOS para Análise & Discovery)
       analyst1: {
         id: 'analyst1',
-        name: 'Sofia',
+        name: 'Ju',
         role: 'analyst',
         roleLabel: 'Lead Discovery',
         allowedStage: 'analysis',
@@ -83,7 +83,7 @@ export class KanbanGameEngine {
       },
       analyst2: {
         id: 'analyst2',
-        name: 'Carlos',
+        name: 'Vini',
         role: 'analyst',
         roleLabel: 'Product Owner',
         allowedStage: 'analysis',
@@ -95,7 +95,7 @@ export class KanbanGameEngine {
       },
       analyst3: {
         id: 'analyst3',
-        name: 'Mariana',
+        name: 'Mari',
         role: 'analyst',
         roleLabel: 'Business Analyst',
         allowedStage: 'analysis',
@@ -121,7 +121,7 @@ export class KanbanGameEngine {
       },
       dev2: {
         id: 'dev2',
-        name: 'Rafael',
+        name: 'Rafa',
         role: 'developer',
         roleLabel: 'Backend Engineer',
         allowedStage: 'development',
@@ -133,7 +133,7 @@ export class KanbanGameEngine {
       },
       dev3: {
         id: 'dev3',
-        name: 'Thiago',
+        name: 'Will',
         role: 'developer',
         roleLabel: 'Fullstack & DevOps',
         allowedStage: 'development',
@@ -147,7 +147,7 @@ export class KanbanGameEngine {
       // 3 Testadores / QA (EXCLUSIVOS para Validação do Produto)
       qa1: {
         id: 'qa1',
-        name: 'Beatriz',
+        name: 'Bea',
         role: 'qa',
         roleLabel: 'QA Specialist',
         allowedStage: 'testing',
@@ -159,7 +159,7 @@ export class KanbanGameEngine {
       },
       qa2: {
         id: 'qa2',
-        name: 'Gabriela',
+        name: 'Duda',
         role: 'qa',
         roleLabel: 'Automation QA',
         allowedStage: 'testing',
@@ -171,7 +171,7 @@ export class KanbanGameEngine {
       },
       qa3: {
         id: 'qa3',
-        name: 'Rodrigo',
+        name: 'Pablito',
         role: 'qa',
         roleLabel: 'Performance QA',
         allowedStage: 'testing',

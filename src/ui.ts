@@ -252,7 +252,7 @@ export class UIController {
           <div style="font-size:0.78rem; color:#c084fc; font-weight:700;">💎 DEMANDA ÉPICA (Valor superior a R$ 35k)</div>
           <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:2px; line-height:1.4;">
             Esta demanda é classificada como <strong>ÉPICO</strong>! Pela complexidade de R$ ${val.toLocaleString('pt-BR')}, gerará automaticamente <strong>${numStories} Stories e ${numBugs} Bugs vinculados</strong> no Backlog ao longo do fluxo.
-            <br><span style="color:#fbbf24; font-weight:600;">⚠️ Capacidade Fixa:</span> O total de desenvolvedores calculados para o desenvolvimento <strong>não pode ser alterado</strong> (permanece fixo em 3: Lucas, Rafael, Thiago). O squad deve usar o fluxo Kanban para entregar!
+            <br><span style="color:#fbbf24; font-weight:600;">⚠️ Capacidade Fixa:</span> O total de desenvolvedores calculados para o desenvolvimento <strong>não pode ser alterado</strong> (permanece fixo em 3: Lucas, Rafa, Will). O squad deve usar o fluxo Kanban para entregar!
           </div>
         `;
       } else if (type === 'docs' || val === 0) {
