@@ -7,6 +7,8 @@
 import { KanbanGameEngine } from './engine';
 import { chartsEngine } from './charts';
 import { soundEngine } from './audio';
+import { ERP_BUSINESS_CATALOG } from './erpCatalog';
+import { APP_VERSION } from './version';
 import type { Card, EventLog, SquadMember, GameScore } from './types';
 
 export class UIController {
@@ -141,6 +143,10 @@ export class UIController {
         e.preventDefault();
         const demandTypeSelect = document.getElementById('cardDemandType') as HTMLSelectElement | null;
         const demandType = demandTypeSelect ? demandTypeSelect.value : 'story';
+        const erpSelect = document.getElementById('selectErpTemplate') as HTMLSelectElement | null;
+        const selectedErpId = erpSelect ? erpSelect.value : '';
+        const erpTpl = selectedErpId ? ERP_BUSINESS_CATALOG.find(t => t.id === selectedErpId) : null;
+
         const data = {
           title: (document.getElementById('cardTitle') as HTMLInputElement).value,
           description: (document.getElementById('cardDesc') as HTMLTextAreaElement).value,
@@ -151,8 +157,14 @@ export class UIController {
           effortAnalysis: (document.getElementById('cardEffortAnalysis') as HTMLInputElement).value,
           effortDev: (document.getElementById('cardEffortDev') as HTMLInputElement).value,
           effortTest: (document.getElementById('cardEffortTest') as HTMLInputElement).value,
+          erpModule: erpTpl ? erpTpl.moduleLabel : undefined,
         };
         const newCard = this.engine.addCard(data);
+        if (erpTpl && erpTpl.demandType === 'docs') {
+          newCard.accumulatedDocCost = erpTpl.accumulatedDocCost;
+          newCard.docCostPerDay = erpTpl.docCostPerDay;
+        }
+
         this.closeModals();
         formCard.reset();
         this.setupNewCardCalculator();
@@ -337,6 +349,30 @@ export class UIController {
       }
       recalc();
     };
+
+    const erpSelect = document.getElementById('selectErpTemplate') as HTMLSelectElement | null;
+    if (erpSelect) {
+      erpSelect.addEventListener('change', () => {
+        const selectedId = erpSelect.value;
+        if (!selectedId) return;
+        const tpl = ERP_BUSINESS_CATALOG.find(t => t.id === selectedId);
+        if (!tpl) return;
+
+        const titleInput = document.getElementById('cardTitle') as HTMLInputElement | null;
+        const descInput = document.getElementById('cardDesc') as HTMLTextAreaElement | null;
+        const classInput = document.getElementById('cardClass') as HTMLSelectElement | null;
+        if (titleInput) titleInput.value = tpl.title;
+        if (descInput) descInput.value = tpl.description;
+        if (classInput) classInput.value = tpl.classOfService;
+        if (typeSelect) typeSelect.value = tpl.demandType === 'docs' ? 'docs' : 'story';
+        valInput.value = tpl.baseValue.toString();
+        recalc();
+        if (deadlineInput) deadlineInput.value = tpl.deadlineDays.toString();
+        if (analysisInput) analysisInput.value = tpl.effortAnalysis.toString();
+        if (devInput) devInput.value = tpl.effortDev.toString();
+        if (testInput) testInput.value = tpl.effortTest.toString();
+      });
+    }
   }
 
   private setupDragAndDrop(): void {
@@ -454,6 +490,11 @@ export class UIController {
     const dayVal = document.getElementById('currentDayValue');
     if (dayVal) {
       dayVal.textContent = Math.min(31, this.engine.day).toString();
+    }
+
+    const verBadge = document.getElementById('appVersionDisplay');
+    if (verBadge) {
+      verBadge.textContent = APP_VERSION;
     }
 
     const btnNext = document.getElementById('btnNextDay') as HTMLButtonElement | null;
@@ -692,6 +733,11 @@ export class UIController {
       `;
     }
 
+    let erpModuleHtml = '';
+    if (card.erpModule) {
+      erpModuleHtml = `<div class="card-erp-module-tag">${card.erpModule}</div>`;
+    }
+
     let epicProgressHtml = '';
     if (card.isEpic) {
       const childStories = this.engine.cards.filter(c => c.parentEpicId === card.id && c.demandType === 'story');
@@ -899,6 +945,7 @@ export class UIController {
       </div>
 
       ${epicRelationHtml}
+      ${erpModuleHtml}
 
       <div class="card-title">${card.title}</div>
       <div class="card-desc">${card.description}</div>

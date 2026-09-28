@@ -64,6 +64,7 @@ export interface Card {
   epicTotalBugs?: number;
   epicSpawnedStories?: number;
   epicSpawnedBugs?: number;
+  erpModule?: string;
 }
 
 export interface WipLimits {

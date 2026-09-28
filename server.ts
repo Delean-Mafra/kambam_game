@@ -23,9 +23,9 @@ const LICENSE_INFO = {
 
 const VERSION_INFO = {
   app: 'KANBAN EV GAME',
-  number: '1.3.0',
+  number: '2.18',
   scheme: 'semver',
-  release_date: '2026-03-12',
+  release_date: '2026-09-27',
   build: process.env.KANBAN_EV_BUILD || 'local',
   generated_at: new Date().toISOString().split('T')[0],
 };

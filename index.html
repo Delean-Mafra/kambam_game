@@ -16,7 +16,7 @@
       <div class="brand-section">
         <div class="brand-icon">🏭</div>
         <div class="brand-text">
-          <h1>Kanban Squad EV <span style="font-size:0.75rem; color:#60a5fa; font-weight:500;">v2.0</span></h1>
+          <h1>Kanban Squad EV <span id="appVersionDisplay" style="font-size:0.75rem; color:#60a5fa; font-weight:600; background:rgba(96,165,250,0.12); padding:0.15rem 0.45rem; border-radius:4px; border:1px solid rgba(96,165,250,0.3);">v2.18</span></h1>
           <div class="brand-subtitle">Simulador de Fluxo Contínuo, Prazos e Gestão de Squad Ágil</div>
         </div>
       </div>
@@ -407,7 +407,7 @@
     </div>
 
     <div class="footer-bottom-bar">
-      <span>Kanban Squad EV • Simulador Educacional de Gestão Ágil e Fluxo Contínuo • &copy; 2026 Delean P. Mafra</span>
+      <span>Kanban Squad EV • Simulador Educacional de Gestão Ágil e Fluxo Contínuo • <strong style="color:#60a5fa;">v2.18</strong> • &copy; 2026 Delean P. Mafra</span>
     </div>
   </footer>
 
@@ -429,6 +429,56 @@
               <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('high-gain')">💡 Story de Alto Valor (R$ 4.500)</button>
               <button type="button" class="btn btn-secondary btn-sm" onclick="window.setCardPreset('epic')">💎 Épico Estratégico (R$ 45.000)</button>
             </div>
+          </div>
+
+          <!-- Seleção Rápida de Desafios Reais do Catálogo ERP (32 opções) -->
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <label class="form-label" for="selectErpTemplate">🏢 Carregar do Catálogo de Regras de Negócio ERP (32 Cards):</label>
+            <select id="selectErpTemplate" class="form-control" style="font-size:0.75rem;">
+              <option value="">-- Selecione uma regra de negócio do ERP para preencher automaticamente --</option>
+              <optgroup label="💰 Módulo de Gestão Financeira e Fluxo de Caixa">
+                <option value="erp-fin-01">Automação de Liquidação Bancária via Retorno de Pagamentos (R$ 3.400)</option>
+                <option value="erp-fin-02">Gestão e Reconciliação de Administradoras de Cartão (R$ 2.800)</option>
+                <option value="erp-fin-03">Conferência, Batimento de Caixa e Gestão de Quebras (R$ 2.200)</option>
+                <option value="erp-fin-04">Estruturação de Centros de Custo e Rateio de Despesas (R$ 2.600)</option>
+                <option value="erp-fin-05">Gestão de Títulos Protestados e Cobrança Cartorária (R$ 3.100)</option>
+                <option value="erp-fin-06">Projeção Dinâmica de Fluxo de Caixa Futuro (R$ 3.500)</option>
+                <option value="erp-fin-07">Alçada de Aprovação de Pagamentos por Limite de Valor (R$ 2.900)</option>
+              </optgroup>
+              <optgroup label="📦 Módulo de Estoque e Suprimentos">
+                <option value="erp-stk-01">Sistema de Grade de Produtos e Variações (Pai/Filho) (R$ 3.200)</option>
+                <option value="erp-stk-02">Fluxo de Homologação Técnica de Novos Materiais (R$ 2.400)</option>
+                <option value="erp-stk-03">Gestão de Unidades Secundárias e Conversão Automática (R$ 2.700)</option>
+                <option value="erp-stk-04">Controle de Embalagens Retornáveis e Vasilhames de Terceiros (R$ 2.100)</option>
+                <option value="erp-stk-05">Rotina de Inventário Físico e Ajuste por Divergência (R$ 3.000)</option>
+                <option value="erp-stk-06">Sugestão de Compras por Ponto de Pedido (R$ 2.800)</option>
+                <option value="erp-stk-07">Rastreamento de Lotes e Validade de Perecíveis (R$ 3.300)</option>
+              </optgroup>
+              <optgroup label="🛒 Módulo de Inteligência de Vendas e CRM">
+                <option value="erp-sal-01">Painel de Análise Comercial e Margem Bruta Instantânea (R$ 3.100)</option>
+                <option value="erp-sal-02">Histórico de Relacionamento e Gestão de Contatos (CRM) (R$ 2.500)</option>
+                <option value="erp-sal-03">Gestão de Ausências e Redistribuição de Carteira de Vendedores (R$ 2.000)</option>
+                <option value="erp-sal-04">Motor de Promoções e Descontos Progressivos Automatizados (R$ 3.400)</option>
+                <option value="erp-sal-05">Painel Logístico de Rastreamento de Entrega de Pedidos (R$ 2.900)</option>
+                <option value="erp-sal-06">Bloqueio Automático de Vendas para Clientes Inadimplentes (R$ 3.200)</option>
+                <option value="erp-sal-07">Orçamentos Comerciais com Validade e Conversão de Pedido (R$ 2.600)</option>
+              </optgroup>
+              <optgroup label="⚖️ Módulo Fiscal, Tributário e Governança">
+                <option value="erp-fisc-01">Emissão e Controle de Sequência de Cartas de Correção Eletrônica (R$ 2.800)</option>
+                <option value="erp-fisc-02">Gerador de Arquivos para Obrigações Acessórias e SPED (Custo / R$ 0)</option>
+                <option value="erp-fisc-03">Gestão e Aplicação de Benefícios e Incentivos Fiscais (R$ 3.500)</option>
+                <option value="erp-fisc-04">Trilha de Auditoria e Log de Alterações em Cadastros Sensíveis (Custo / R$ 0)</option>
+                <option value="erp-fisc-05">Matriz de Tributação Cruzando Origem, Destino e NCM (R$ 3.600)</option>
+                <option value="erp-fisc-06">Cálculo e Destaque de Retenções de Impostos na Venda (R$ 2.700)</option>
+              </optgroup>
+              <optgroup label="⚡ Módulo de Frente de Caixa e Infraestrutura">
+                <option value="erp-pos-01">Importação e Consolidação de Faturamento Diário de ECFs (R$ 2.300)</option>
+                <option value="erp-pos-02">Autenticação Biométrica para Liberação de Operações de Risco (R$ 3.100)</option>
+                <option value="erp-pos-03">Central Proativa de Alertas e Notificações de Negócio (R$ 2.500)</option>
+                <option value="erp-pos-04">Repositório Centralizado de Documentação Digital e Anexos (R$ 2.800)</option>
+                <option value="erp-pos-05">Configuração de Parâmetros Globais por Estação de Trabalho (R$ 2.700)</option>
+              </optgroup>
+            </select>
           </div>
 
           <div class="form-row">
@@ -573,7 +623,7 @@
   <div class="modal-backdrop" id="modalHelp">
     <div class="modal-box" style="max-width: 650px;">
       <div class="modal-header">
-        <h3 class="modal-title">📖 Guia do Jogo: Regras do Kanban Squad EV (TypeScript Edition)</h3>
+        <h3 class="modal-title">📖 Guia do Jogo: Regras do Kanban Squad EV v2.18</h3>
         <button class="modal-close-btn">&times;</button>
       </div>
       <div class="modal-content-scroll" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.55;">

@@ -20,6 +20,8 @@ import type {
 import { SQUAD_EVENTS } from './events';
 import { soundEngine } from './audio';
 import { generateAntiTamperHash, verifyAntiTamperHash } from './crypto';
+import { getRandomErpCardTemplate, ERP_BUSINESS_CATALOG } from './erpCatalog';
+import { APP_VERSION_NUMBER } from './version';
 
 export class KanbanGameEngine {
   public day: number = 1;
@@ -783,6 +785,7 @@ export class KanbanGameEngine {
       epicTotalBugs,
       epicSpawnedStories: 0,
       epicSpawnedBugs: 0,
+      erpModule: cardData.erpModule || undefined,
     };
 
     this.cards.push(newCard);
@@ -917,12 +920,54 @@ export class KanbanGameEngine {
   }
 
   public spawnRandomBacklogDemand(): Card {
-    const types: ('bug' | 'support' | 'docs' | 'story')[] = ['bug', 'support', 'docs', 'story'];
-    const chosenType = types[Math.floor(Math.random() * types.length)];
     const cardNum = 100 + this.cards.length + 1;
     let card: Card;
 
-    if (chosenType === 'bug') {
+    // 70% chance to draw from the 32 real-world ERP business task cards
+    const useErpCatalog = Math.random() < 0.70;
+
+    if (useErpCatalog) {
+      const tpl = getRandomErpCardTemplate();
+      const isDocs = tpl.demandType === 'docs';
+      const prefix = tpl.demandType === 'docs' ? 'DOC-' : tpl.demandType === 'support' ? 'SUP-' : 'CRD-';
+
+      card = {
+        id: 'erp-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000),
+        code: prefix + cardNum,
+        title: tpl.title,
+        description: tpl.description,
+        classOfService: tpl.classOfService,
+        demandType: tpl.demandType,
+        erpModule: tpl.moduleLabel,
+        column: 'backlog',
+        createdDay: this.day,
+        startedDay: null,
+        completedDay: null,
+        deadlineDay: this.day + tpl.deadlineDays,
+        baseValue: tpl.baseValue,
+        currentValue: tpl.baseValue,
+        penaltyPerDay: tpl.penaltyPerDay,
+        accumulatedPenalty: 0,
+        effortAnalysis: tpl.effortAnalysis,
+        doneAnalysis: 0,
+        effortDev: tpl.effortDev,
+        doneDev: 0,
+        effortTest: tpl.effortTest,
+        doneTest: 0,
+        totalEffort: tpl.effortAnalysis + tpl.effortDev + tpl.effortTest,
+        isBlocked: false,
+        assignedAgents: [],
+        isManual: false,
+        isHighValue: tpl.baseValue >= 3000,
+        bugRejectionCount: 0,
+        accumulatedDocCost: isDocs ? (tpl.accumulatedDocCost || 400) : undefined,
+        docCostPerDay: isDocs ? (tpl.docCostPerDay || 180) : undefined,
+      };
+    } else {
+      const types: ('bug' | 'support' | 'docs' | 'story')[] = ['bug', 'support', 'docs', 'story'];
+      const chosenType = types[Math.floor(Math.random() * types.length)];
+
+      if (chosenType === 'bug') {
       const bugOptions = [
         { title: 'Falha na Validação de Pagamento Pix', desc: 'Usuários relatam intermitência no webhook de confirmação do Bacen.' },
         { title: 'Crash no Checkout em Dispositivos Android', desc: 'Exceção não tratada ao tentar calcular frete para múltiplos itens.' },
@@ -1077,6 +1122,7 @@ export class KanbanGameEngine {
         bugRejectionCount: 0,
       };
     }
+  }
 
     this.cards.push(card);
     return card;
@@ -1686,7 +1732,7 @@ export class KanbanGameEngine {
     const signature = await generateAntiTamperHash(rawData);
 
     const exportPayload: GameExportData = {
-      version: '1.3.0',
+      version: APP_VERSION_NUMBER,
       exportedAt: new Date().toISOString(),
       security: {
         hashAlgorithm: 'SHA-256-HMAC',

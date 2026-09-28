@@ -2146,5 +2146,24 @@ body {
   color: #fde68a;
 }
 
+/* ==========================================================================
+   ERP Business Module Badge on Card
+   ========================================================================== */
+.card-erp-module-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.18rem 0.48rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.25;
+  width: fit-content;
+}
+
 
 
